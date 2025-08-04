@@ -188,10 +188,11 @@ interactive_menu() {
         echo -e "  1) 更新系统/软件包      ${GRAY}# 推荐${NC}"
         echo -e "  2) 开启BBR              ${GRAY}# 推荐${NC}"
         echo -e "  3) TCP网络调优          ${GRAY}# 推荐${NC}"
-        echo -e "  4) DNS服务器配置        ${GRAY}# 推荐${NC}"
-        echo -e "  5) SSH安全配置          ${GRAY}# SSH端口和密码修改${NC}"
-        echo -e "  6) 禁用IPv6             ${GRAY}# 避免双栈网络问题${NC}"
-        echo -e "  7) 全部优化             ${GRAY}# 运行所有优化项目${NC}"
+        echo -e "  4) 一键网络优化          ${GRAY}# 一键运行1、2、3项${NC}"
+        echo -e "  ──────────────────────────────────────────────"
+        echo -e "  5) DNS服务器配置        ${GRAY}# 修改服务器DNS${NC}"
+        echo -e "  6) SSH安全配置          ${GRAY}# SSH端口和密码修改${NC}"
+        echo -e "  7) 禁用IPv6             ${GRAY}# 避免双栈网络问题${NC}"
         echo -e "  0) 退出脚本"
         echo
         
@@ -223,6 +224,14 @@ interactive_menu() {
                 fi
                 ;;
             4)
+                echo -e "${GREEN}您选择了 [基础优化套餐] ...${NC}"
+                if run_optimization "basic"; then
+                    # 子脚本正常退出，设置显示标题框并继续
+                    show_header="true"
+                    continue
+                fi
+                ;;
+            5)
                 echo -e "${GREEN}您选择了 [DNS服务器配置] ...${NC}"
                 if run_optimization "dns"; then
                     # 子脚本正常退出，设置显示标题框并继续
@@ -230,7 +239,7 @@ interactive_menu() {
                     continue
                 fi
                 ;;
-            5)
+            6)
                 echo -e "${GREEN}您选择了 [SSH安全配置] ...${NC}"
                 if run_optimization "ssh"; then
                     # 子脚本正常退出，设置显示标题框并继续
@@ -238,17 +247,9 @@ interactive_menu() {
                     continue
                 fi
                 ;;
-            6)
+            7)
                 echo -e "${GREEN}您选择了 [禁用IPv6] ...${NC}"
                 if run_optimization "ipv6"; then
-                    # 子脚本正常退出，设置显示标题框并继续
-                    show_header="true"
-                    continue
-                fi
-                ;;
-            7)
-                echo -e "${GREEN}您选择了 [全部优化] ...${NC}"
-                if run_optimization "all"; then
                     # 子脚本正常退出，设置显示标题框并继续
                     show_header="true"
                     continue

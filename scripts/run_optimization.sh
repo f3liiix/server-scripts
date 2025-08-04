@@ -91,7 +91,7 @@ run_script() {
 
 # 运行所有脚本
 run_all_scripts() {
-    log_step "运行所有优化脚本..."
+    log_step "运行一键网络优化..."
     
     local failed_scripts=()
     local total_scripts=${#SCRIPT_KEYS[@]}
@@ -137,18 +137,57 @@ main() {
     # 检查参数
     if [[ -z "$target_script" ]]; then
         log_error "请指定要运行的脚本"
-        log_info "支持的脚本: ${SCRIPT_KEYS[*]} all"
+        log_info "支持的脚本: ${SCRIPT_KEYS[*]} basic all"
         return 1
     fi
     
     # 执行脚本
     if [[ "$target_script" == "all" ]]; then
         run_all_scripts
+    elif [[ "$target_script" == "basic" ]]; then
+        log_step "一键网络优化 (更新系统、开启BBR、TCP调优)..."
+        
+        local basic_scripts=("update" "bbr" "tcp")
+        local failed_scripts=()
+        local total_scripts=${#basic_scripts[@]}
+        local current=0
+        
+        for script_key in "${basic_scripts[@]}"; do
+            ((current++))
+            
+            echo
+            log_info "进度: [$current/$total_scripts] 运行 $script_key"
+            
+            if ! run_script "$script_key"; then
+                failed_scripts+=("$script_key")
+                log_warning "$script_key 脚本执行失败，继续执行其他脚本..."
+            fi
+            
+            # 脚本间暂停
+            if [[ $current -lt $total_scripts ]]; then
+                log_info "等待 3 秒后继续下一个脚本..."
+                sleep 3
+            fi
+        done
+        
+        # 总结结果
+        echo
+        echo "=== 一键网络优化执行总结 ==="
+        if [[ ${#failed_scripts[@]} -eq 0 ]]; then
+            log_success "一键网络优化执行成功！"
+        else
+            log_warning "以下脚本执行失败:"
+            for script in "${failed_scripts[@]}"; do
+                echo "  - $script"
+            done
+            return 1
+        fi
+        echo "=========================="
     elif get_script_file "$target_script" >/dev/null 2>&1; then
         run_script "$target_script"
     else
         log_error "未知的脚本: $target_script"
-        log_info "支持的脚本: ${SCRIPT_KEYS[*]} all"
+        log_info "支持的脚本: ${SCRIPT_KEYS[*]} basic all"
         return 1
     fi
 }
