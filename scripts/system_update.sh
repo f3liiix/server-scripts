@@ -210,10 +210,6 @@ check_reboot_required() {
 
 # 主程序
 main() {
-    echo -e "${GREEN}╔═══════════════════════════════════════════════╗${NC}"
-    echo -e "${GREEN}║                 系统更新工具                    ║${NC}"
-    echo -e "${GREEN}║            System Update Tool                 ║${NC}"
-    echo -e "${GREEN}╚═══════════════════════════════════════════════╝${NC}"
     echo
     
     # 检查root权限
