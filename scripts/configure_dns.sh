@@ -198,12 +198,12 @@ input_custom_dns() {
     local dns_servers=()
     local dns_input
     
-    echo
-    echo "=== 自定义DNS配置 ==="
-    echo "请输入DNS服务器地址（IPv4格式）"
-    echo "至少需要1个，最多支持2个DNS服务器"
-    echo "直接按回车结束输入"
-    echo "======================"
+    echo >&2
+    echo "=== 自定义DNS配置 ===" >&2
+    echo "请输入DNS服务器地址（IPv4格式）" >&2
+    echo "至少需要1个，最多支持2个DNS服务器" >&2
+    echo "直接按回车结束输入" >&2
+    echo "======================" >&2
     
     local index=1
     while [[ $index -le 2 ]]; do
@@ -249,7 +249,7 @@ input_custom_dns() {
         return 1
     fi
     
-    # 清理输出，确保没有多余字符
+    # 清理输出，确保没有多余字符，只输出到stdout
     printf '%s' "${dns_servers[*]}"
     return 0
 }
