@@ -166,6 +166,66 @@ test_dns_server() {
     return 1
 }
 
+# 输入自定义DNS
+input_custom_dns() {
+    local dns_servers=()
+    local dns_input
+    
+    echo
+    echo "=== 自定义DNS配置 ==="
+    echo "请输入DNS服务器地址（IPv4格式）"
+    echo "至少需要1个，最多支持4个DNS服务器"
+    echo "直接按回车结束输入"
+    echo "======================"
+    
+    local index=1
+    while [[ $index -le 4 ]]; do
+        read -p "DNS服务器 $index (可选): " dns_input
+        
+        # 如果为空且已有至少一个DNS，结束输入
+        if [[ -z "$dns_input" ]]; then
+            if [[ ${#dns_servers[@]} -gt 0 ]]; then
+                break
+            else
+                log_warning "至少需要输入1个DNS服务器"
+                continue
+            fi
+        fi
+        
+        # 验证DNS地址格式
+        if ! validate_ipv4 "$dns_input"; then
+            log_error "无效的IPv4地址格式: $dns_input"
+            continue
+        fi
+        
+        # 检查是否重复
+        local duplicate=false
+        for existing_dns in "${dns_servers[@]}"; do
+            if [[ "$existing_dns" == "$dns_input" ]]; then
+                log_warning "DNS地址重复: $dns_input"
+                duplicate=true
+                break
+            fi
+        done
+        
+        if [[ "$duplicate" == true ]]; then
+            continue
+        fi
+        
+        dns_servers+=("$dns_input")
+        log_success "已添加DNS服务器: $dns_input"
+        ((index++))
+    done
+    
+    if [[ ${#dns_servers[@]} -eq 0 ]]; then
+        log_error "未输入任何有效的DNS服务器"
+        return 1
+    fi
+    
+    echo "${dns_servers[*]}"
+    return 0
+}
+
 # 测试DNS服务器列表
 test_dns_servers() {
     local dns_list="$1"
@@ -484,8 +544,9 @@ show_main_menu() {
     echo "2) Google DNS       - 8.8.8.8, 8.8.4.4"
     echo "3) 阿里DNS          - 223.5.5.5, 223.6.6.6"
     echo "4) 腾讯DNS          - 119.29.29.29, 182.254.116.116"
-    echo "5) 恢复DNS配置备份"
-    echo "0) 退出"
+    echo "5) 自定义DNS服务器"
+    echo "6) 恢复DNS配置备份"
+    echo "0) 退出DNS配置工具"
     echo "================================================="
 }
 
@@ -514,8 +575,6 @@ show_current_config() {
             echo "  DNS $((i+1)): $dns$description"
         done
     fi
-    
-    echo "  管理方式: $(detect_dns_manager)"
 }
 
 # 配置预设DNS
@@ -536,7 +595,7 @@ configure_preset_dns() {
         return 1
     fi
     
-    if confirm_action "确定要配置这些DNS服务器吗？" "Y"; then
+    if confirm_action "确定要配置以上DNS服务器吗？" "Y"; then
         backup_dns_config
         
         if apply_dns_config "$dns_servers" && verify_dns_config; then
@@ -554,6 +613,40 @@ configure_preset_dns() {
         fi
     else
         log_info "已取消DNS配置"
+    fi
+}
+
+# 配置自定义DNS
+configure_custom_dns() {
+    local custom_dns
+    
+    if custom_dns=$(input_custom_dns); then
+        echo
+        echo "=== 配置自定义DNS服务器 ==="
+        echo "DNS服务器: $custom_dns"
+        echo
+        
+        if ! test_dns_servers "$custom_dns"; then
+            log_error "DNS服务器测试失败，配置已取消"
+            return 1
+        fi
+        
+        if confirm_action "确定要配置以上DNS服务器吗？" "Y"; then
+            backup_dns_config
+            
+            if apply_dns_config "$custom_dns" && verify_dns_config; then
+                echo
+                show_dns_result
+                log_success "自定义DNS配置完成！"
+            else
+                log_error "DNS配置失败，正在回滚..."
+                rollback_dns_config
+            fi
+        else
+            log_info "已取消DNS配置"
+        fi
+    else
+        log_info "已取消自定义DNS配置"
     fi
 }
 
@@ -699,7 +792,7 @@ main() {
         show_main_menu
         
         local choice
-        read -p "请输入选择 (0-5): " choice
+        read -p "请输入选择 (0-6): " choice
         
         case "$choice" in
             1)
@@ -724,6 +817,11 @@ main() {
                 ;;
             5)
                 echo
+                log_info "您选择了 [自定义DNS服务器] ..."
+                configure_custom_dns
+                ;;
+            6)
+                echo
                 log_info "您选择了 [恢复DNS配置备份] ..."
                 restore_dns_backup
                 ;;
@@ -732,7 +830,7 @@ main() {
                 exit 0
                 ;;
             *)
-                log_warning "请输入0-5之间的数字"
+                log_warning "请输入0-6之间的数字"
                 ;;
         esac
         
