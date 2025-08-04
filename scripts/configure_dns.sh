@@ -82,7 +82,6 @@ detect_dns_manager() {
     fi
     
     log_info "检测到DNS管理方式: $manager"
-    echo "$manager"
 }
 
 # 获取当前DNS配置
@@ -413,7 +412,6 @@ verify_dns_config() {
 
 # 显示DNS配置结果
 show_dns_result() {
-    echo
     echo "=== 🌐 DNS配置结果 ==="
     
     local current_dns
@@ -441,7 +439,7 @@ show_dns_result() {
     echo "管理方式: $(detect_dns_manager)"
     echo "配置文件: $RESOLV_CONF"
     echo "备份位置: $BACKUP_DIR"
-    echo "====================="
+    echo "======================"
 }
 
 # 回滚DNS配置
@@ -476,16 +474,14 @@ rollback_dns_config() {
 # 主菜单
 show_main_menu() {
     echo
-    echo "=== DNS服务器配置 ==="
-    echo
     
     # 显示当前DNS配置
     show_current_config
     
     echo
     echo "请选择DNS服务器："
-    echo "1) Cloudflare DNS    - 1.1.1.1, 1.0.0.1"
-    echo "2) Google DNS        - 8.8.8.8, 8.8.4.4"
+    echo "1) Cloudflare DNS   - 1.1.1.1, 1.0.0.1"
+    echo "2) Google DNS       - 8.8.8.8, 8.8.4.4"
     echo "3) 阿里DNS          - 223.5.5.5, 223.6.6.6"
     echo "4) 腾讯DNS          - 119.29.29.29, 182.254.116.116"
     echo "5) 恢复DNS配置备份"
@@ -535,7 +531,6 @@ configure_preset_dns() {
     echo "DNS服务器: $dns_servers"
     echo
     
-    log_step "测试DNS服务器可达性..."
     if ! test_dns_servers "$dns_servers"; then
         log_error "DNS服务器测试失败，配置已取消"
         return 1
@@ -603,9 +598,6 @@ restore_dns_backup() {
 
 # 主程序
 main() {
-    echo "=== DNS配置脚本 v$SCRIPT_VERSION ==="
-    echo
-    
     # 1. 优先处理--help参数（无需root权限）
     if [[ $# -gt 0 ]] && [[ "$1" == "--help" ]]; then
         echo "用法: $0 [选项]"
