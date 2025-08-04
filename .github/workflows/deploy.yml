@@ -50,8 +50,8 @@ jobs:
         echo "🧪 Testing installation scripts..."
         # 测试bootstrap.sh语法
         bash -n bootstrap.sh
-        # 测试install-online.sh语法
-        bash -n install-online.sh
+        # 测试install.sh语法
+        bash -n install.sh
         echo "✅ Installation scripts are valid"
 
   # URL更新步骤已移除，脚本中的URL已直接固定
@@ -91,7 +91,7 @@ jobs:
         echo "### 安装方式" >> CHANGELOG.md
         echo '```bash' >> CHANGELOG.md
         echo "# 简化安装" >> CHANGELOG.md
-        echo "bash <(curl -sL https://raw.githubusercontent.com/${{ github.repository }}/main/install-online.sh)" >> CHANGELOG.md
+        echo "bash <(curl -sL https://raw.githubusercontent.com/${{ github.repository }}/main/install.sh)" >> CHANGELOG.md
         echo "" >> CHANGELOG.md
         echo "# 完整安装" >> CHANGELOG.md
         echo "bash <(curl -sL https://raw.githubusercontent.com/${{ github.repository }}/main/bootstrap.sh)" >> CHANGELOG.md
@@ -131,8 +131,8 @@ jobs:
         cp index.html public/index.html
         
         # 复制安装脚本到public目录，支持自定义域名访问
-        cp install-online.sh public/install-online.sh
-        cp install-online.sh public/install          # 别名，支持 ss.hide.ss/install
+        cp install.sh public/install.sh
+        cp install.sh public/install          # 别名，支持 ss.hide.ss/install
         cp bootstrap.sh public/bootstrap.sh
         cp bootstrap.sh public/bootstrap             # 别名，支持 ss.hide.ss/bootstrap  
         cp version.txt public/version.txt
@@ -140,6 +140,11 @@ jobs:
         
         # 复制CNAME文件以支持自定义域名
         cp CNAME public/CNAME
+        
+        # 复制scripts目录（混合文件需要下载这些脚本）
+        cp -r scripts/ public/scripts/
+        
+        # install.sh 已删除，不再需要复制
         
         # 验证混合主页文件
         if [[ -f public/index.html ]]; then

@@ -15,7 +15,7 @@ readonly TEST_ENDPOINTS=(
     "/install"
     "/bootstrap"
     "/version"
-    "/install-online.sh"
+    "/install.sh"
     "/bootstrap.sh"
     "/version.txt"
 )

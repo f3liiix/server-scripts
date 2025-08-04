@@ -31,7 +31,7 @@ readonly SCRIPT_FILES=(
     "scripts/configure_dns.sh"
     "scripts/common_functions.sh"
     "scripts/run_optimization.sh"
-    "install.sh"
+
     "README.md"
 )
 
@@ -290,14 +290,16 @@ EOF
 post_install_setup() {
     log_step "运行安装后配置..."
     
-    # 运行原有的install.sh脚本
-    local install_script="$INSTALL_DIR/install.sh"
-    if [[ -f "$install_script" ]]; then
-        cd "$INSTALL_DIR"
-        bash "$install_script" --no-links  # 不创建链接，我们已经创建了
+    # 设置脚本权限（原install.sh的核心功能）
+    log "设置脚本执行权限..."
+    find "$INSTALL_DIR/scripts" -name "*.sh" -exec chmod +x {} \;
+    
+    # 验证主控制脚本
+    local main_script="$INSTALL_DIR/scripts/run_optimization.sh"
+    if [[ -f "$main_script" ]]; then
         log_success "安装配置完成"
     else
-        log_warning "未找到install.sh脚本"
+        log_warning "未找到主控制脚本"
     fi
 }
 
