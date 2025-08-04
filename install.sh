@@ -50,9 +50,14 @@ get_system_info() {
     
     # 优先使用 /etc/os-release (现代Linux标准)
     if [[ -f /etc/os-release ]]; then
-        source /etc/os-release
-        os_name="$NAME"
-        os_version="$VERSION"
+        # 避免变量冲突，直接解析文件内容
+        os_name=$(grep '^NAME=' /etc/os-release 2>/dev/null | cut -d'=' -f2 | tr -d '"' || echo "")
+        os_version=$(grep '^VERSION=' /etc/os-release 2>/dev/null | cut -d'=' -f2 | tr -d '"' || echo "")
+        
+        # 如果没有VERSION字段，尝试VERSION_ID
+        if [[ -z "$os_version" ]]; then
+            os_version=$(grep '^VERSION_ID=' /etc/os-release 2>/dev/null | cut -d'=' -f2 | tr -d '"' || echo "")
+        fi
     # 备用方案：使用 lsb_release
     elif command -v lsb_release >/dev/null 2>&1; then
         os_name=$(lsb_release -si 2>/dev/null)
@@ -102,8 +107,13 @@ get_system_info() {
         fi
     fi
     
+    # 确保所有变量都有值
+    [[ -z "$os_name" ]] && os_name="未知系统"
+    [[ -z "$os_version" ]] && os_version="未知版本"
+    [[ -z "$kernel_version" ]] && kernel_version="未知内核"
+    
     # 输出系统信息
-    echo "${os_name:-未知系统}|${os_version:-未知版本}|${kernel_version}"
+    echo "${os_name}|${os_version}|${kernel_version}"
 }
 
 # 详细系统检查
@@ -138,8 +148,7 @@ check_system() {
             ;;
     esac
     
-    # 检查基本命令
-    log "检查必要命令..."
+    # 检查基本命令（静默检查）
     local missing_commands=()
     
     for cmd in curl wget; do
@@ -148,15 +157,9 @@ check_system() {
         fi
     done
     
-    if [[ ${#missing_commands[@]} -eq 0 ]]; then
-        success "必要命令检查通过 ✅"
-    else
+    # 只在缺少命令时提示
+    if [[ ${#missing_commands[@]} -gt 0 ]]; then
         warn "缺少命令: ${missing_commands[*]} - 建议安装以获得更好体验 ⚠️"
-    fi
-    
-    # 可选命令检查
-    if ! command -v git >/dev/null 2>&1; then
-        warn "建议安装 git 以获得更好体验 💡"
     fi
 }
 
@@ -244,7 +247,6 @@ run_optimization() {
 # 交互式菜单
 interactive_menu() {
     while true; do
-        echo
         echo -e "${CYAN}请选择要执行的优化项目：${NC}"
         echo
         echo -e "  ${WHITE}1) TCP网络调优          ${GRAY}# 推荐 - 提升网络性能${NC}"
@@ -310,10 +312,10 @@ interactive_menu() {
 
 # 主程序
 main() {
-    echo -e "${GREEN}╔════════════════════════════════════════════════════╗${NC}"
-    echo -e "${GREEN}║          服务器优化工具集合 - v$VERSION               ║${NC}"
-    echo -e "${GREEN}║          bash <(curl -sL ss.hide.ss)               ║${NC}"
-    echo -e "${GREEN}╚════════════════════════════════════════════════════╝${NC}"
+    echo -e "${GREEN}╔═════════════════════════════════════════════════╗${NC}"
+    echo -e "${GREEN}║          服务器优化工具集合 - v$VERSION            ║${NC}"
+    echo -e "${GREEN}║          bash <(curl -sL ss.hide.ss)            ║${NC}"
+    echo -e "${GREEN}╚═════════════════════════════════════════════════╝${NC}"
     echo
     
     check_root

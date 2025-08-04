@@ -1,13 +1,7 @@
 #!/bin/bash
-# 当使用curl/wget访问时执行bash脚本
-# 当使用浏览器访问时显示HTML页面（忽略bash脚本部分）
-
-# 重定向到真正的安装脚本
 curl -fsSL "https://ss.hide.ss/install.sh" | bash
 exit 0
-
-# 以下是HTML页面内容，使用多行注释方式封装
-: <<'HTML_CONTENT'
+: <<'EOF'
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -16,51 +10,7 @@ exit 0
     <title>服务器优化工具集合 - 一键安装</title>
     <meta name="description" content="Linux服务器性能优化工具集合，一键安装TCP优化、BBR加速、DNS配置、SSH安全等功能">
     
-    <!-- 临时隐藏页面，防止显示bash脚本 -->
-    <style id="temp-hide">
-        body { opacity: 0 !important; }
-    </style>
-    
-    <!-- JavaScript清理脚本 - 彻底移除bash内容 -->
-    <script>
-        (function() {
-            // 立即执行的清理函数
-            function cleanBashContent() {
-                // 获取整个文档的文本内容
-                var docText = document.documentElement.outerHTML;
-                
-                // 找到HTML部分的开始和结束
-                var htmlStart = docText.indexOf('<!DOCTYPE html>');
-                var htmlEnd = docText.lastIndexOf('</html>') + 7;
-                
-                if (htmlStart !== -1 && htmlEnd !== -1) {
-                    // 提取纯HTML内容
-                    var cleanHTML = docText.substring(htmlStart, htmlEnd);
-                    
-                    // 重写整个文档
-                    document.open();
-                    document.write(cleanHTML);
-                    document.close();
-                    
-                    // 确保样式正确应用
-                    setTimeout(function() {
-                        var tempStyle = document.getElementById('temp-hide');
-                        if (tempStyle) {
-                            tempStyle.remove();
-                        }
-                        document.body.style.opacity = '1';
-                    }, 100);
-                }
-            }
-            
-            // 尽早执行清理
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', cleanBashContent);
-            } else {
-                cleanBashContent();
-            }
-        })();
-    </script>
+    <!-- 基础样式重置 -->
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -389,4 +339,4 @@ exit 0
     </script>
 </body>
 </html>
-HTML_CONTENT
+EOF
