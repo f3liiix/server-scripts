@@ -239,6 +239,7 @@ main() {
         echo
         show_update_summary "$pkg_manager"
         log_success "系统更新完成！"
+        echo
         return 0
     else
         echo

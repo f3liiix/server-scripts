@@ -201,49 +201,56 @@ interactive_menu() {
             1)
                 echo -e "${GREEN}您选择了 [更新系统及软件包] ...${NC}"
                 if run_optimization "update"; then
-                    # 子脚本正常退出，不显示"按任意键返回主菜单"
+                    # 子脚本正常退出，设置显示标题框并继续
+                    show_header="true"
                     continue
                 fi
                 ;;
             2)
                 echo -e "${GREEN}您选择了 [一键开启BBR] ...${NC}"
                 if run_optimization "bbr"; then
-                    # 子脚本正常退出，不显示"按任意键返回主菜单"
+                    # 子脚本正常退出，设置显示标题框并继续
+                    show_header="true"
                     continue
                 fi
                 ;;
             3)
                 echo -e "${GREEN}您选择了 [TCP网络调优] ...${NC}"
                 if run_optimization "tcp"; then
-                    # 子脚本正常退出，不显示"按任意键返回主菜单"
+                    # 子脚本正常退出，设置显示标题框并继续
+                    show_header="true"
                     continue
                 fi
                 ;;
             4)
                 echo -e "${GREEN}您选择了 [DNS服务器配置] ...${NC}"
                 if run_optimization "dns"; then
-                    # 子脚本正常退出，不显示"按任意键返回主菜单"
+                    # 子脚本正常退出，设置显示标题框并继续
+                    show_header="true"
                     continue
                 fi
                 ;;
             5)
                 echo -e "${GREEN}您选择了 [SSH安全配置] ...${NC}"
                 if run_optimization "ssh"; then
-                    # 子脚本正常退出，不显示"按任意键返回主菜单"
+                    # 子脚本正常退出，设置显示标题框并继续
+                    show_header="true"
                     continue
                 fi
                 ;;
             6)
                 echo -e "${GREEN}您选择了 [禁用IPv6] ...${NC}"
                 if run_optimization "ipv6"; then
-                    # 子脚本正常退出，不显示"按任意键返回主菜单"
+                    # 子脚本正常退出，设置显示标题框并继续
+                    show_header="true"
                     continue
                 fi
                 ;;
             7)
                 echo -e "${GREEN}您选择了 [全部优化] ...${NC}"
                 if run_optimization "all"; then
-                    # 子脚本正常退出，不显示"按任意键返回主菜单"
+                    # 子脚本正常退出，设置显示标题框并继续
+                    show_header="true"
                     continue
                 fi
                 ;;
