@@ -142,25 +142,39 @@ test_dns_server() {
     
     log_info "测试DNS服务器 $dns_server..."
     
+    # 首先检查DNS服务器地址是否可达（ping测试）
+    if command_exists ping; then
+        if ! timeout 5 ping -c 1 "$dns_server" >/dev/null 2>&1; then
+            log_warning "❌ $dns_server 网络不可达"
+            return 1
+        fi
+    fi
+    
     # 尝试多个测试域名
     for test_domain in "${test_domains[@]}"; do
         # 使用nslookup测试
         if command_exists nslookup; then
+            log_info "使用 nslookup 测试 $dns_server ($test_domain)..."
             if timeout "$DNS_TEST_TIMEOUT" nslookup "$test_domain" "$dns_server" >/dev/null 2>&1; then
+                log_info "✅ $dns_server 通过 nslookup 测试 ($test_domain)"
                 return 0
             fi
         fi
         
         # 使用dig测试
         if command_exists dig; then
+            log_info "使用 dig 测试 $dns_server ($test_domain)..."
             if timeout "$DNS_TEST_TIMEOUT" dig @"$dns_server" "$test_domain" +short >/dev/null 2>&1; then
+                log_info "✅ $dns_server 通过 dig 测试 ($test_domain)"
                 return 0
             fi
         fi
         
         # 使用host测试
         if command_exists host; then
+            log_info "使用 host 测试 $dns_server ($test_domain)..."
             if timeout "$DNS_TEST_TIMEOUT" host "$test_domain" "$dns_server" >/dev/null 2>&1; then
+                log_info "✅ $dns_server 通过 host 测试 ($test_domain)"
                 return 0
             fi
         fi
@@ -170,10 +184,12 @@ test_dns_server() {
     if ! command_exists nslookup && ! command_exists dig && ! command_exists host; then
         log_warning "未找到DNS测试工具，尝试ping测试（可能不准确）"
         if timeout "$DNS_TEST_TIMEOUT" ping -c 1 "$dns_server" >/dev/null 2>&1; then
+            log_info "✅ $dns_server 通过 ping 测试"
             return 0
         fi
     fi
     
+    log_warning "❌ $dns_server 所有测试方法都失败"
     return 1
 }
 
@@ -185,12 +201,12 @@ input_custom_dns() {
     echo
     echo "=== 自定义DNS配置 ==="
     echo "请输入DNS服务器地址（IPv4格式）"
-    echo "至少需要1个，最多支持4个DNS服务器"
+    echo "至少需要1个，最多支持2个DNS服务器"
     echo "直接按回车结束输入"
     echo "======================"
     
     local index=1
-    while [[ $index -le 4 ]]; do
+    while [[ $index -le 2 ]]; do
         read -p "DNS服务器 $index (可选): " dns_input
         
         # 如果为空且已有至少一个DNS，结束输入
