@@ -2,14 +2,14 @@
 
 # ==============================================================================
 # Script Name: install.sh
-# Description: 服务器优化工具集合在线安装脚本 (简化版)
+# Description: 服务器优化工具集合在线脚本
 # Usage:       bash <(curl -sL ss.hide.ss)
 # ==============================================================================
 
 set -euo pipefail
 
 # --- 配置项 ---
-readonly VERSION="1.0"
+readonly VERSION="1.0.0"
 readonly REPO_URL="https://github.com/f3liiix/server-scripts"
 readonly RAW_BASE="https://ss.hide.ss"
 readonly INSTALL_DIR="/opt/server-optimization"
@@ -31,8 +31,8 @@ error() { echo -e "${RED}[ERROR]${NC} $1" >&2; }
 # 检查root权限
 check_root() {
     if [[ $EUID -ne 0 ]]; then
-        error "需要root权限运行此脚本"
-        echo "请使用: sudo bash <(curl -sL your-install-url)"
+        error "需要 root 权限运行此脚本"
+        echo "请使用: sudo bash <(curl -sL ss.hide.ss)"
         exit 1
     fi
 }
@@ -60,8 +60,6 @@ check_system() {
 
 # 下载并安装
 install_tools() {
-    log "开始下载和安装服务器优化工具..."
-    
     # 创建安装目录
     mkdir -p "$INSTALL_DIR"
     cd "$INSTALL_DIR"
@@ -81,10 +79,8 @@ install_tools() {
         local dir=$(dirname "$file")
         mkdir -p "$dir"
         
-        log "下载: $file"
-        if curl -fsSL "$RAW_BASE/$file" -o "$file"; then
-            success "✅ $file"
-        else
+        # 静默下载，只在失败时输出错误
+        if ! curl -fsSL "$RAW_BASE/$file" -o "$file" 2>/dev/null; then
             error "❌ 下载失败: $file"
             exit 1
         fi
@@ -92,92 +88,146 @@ install_tools() {
     
     # 设置权限
     find . -name "*.sh" -exec chmod +x {} \;
-    chown -R root:root "$INSTALL_DIR"
-    
-    success "文件下载完成"
+    chown -R root:root "$INSTALL_DIR" 2>/dev/null || true
 }
 
-# 创建全局命令
-create_commands() {
-    log "创建全局命令..."
-    
+# 验证安装
+verify_installation() {
+    # 验证主控制脚本是否存在且可执行
     local main_script="$INSTALL_DIR/scripts/run_optimization.sh"
     
-    # 创建主命令
-    cat > /usr/local/bin/server-optimize << EOF
-#!/bin/bash
-exec $main_script "\$@"
-EOF
+    if [[ -f "$main_script" ]] && [[ -x "$main_script" ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# 显示菜单说明
+show_menu_info() {
+    echo
+    echo -e "${GREEN}🎉 服务器优化工具已就绪！${NC}"
+    echo -e "${CYAN}💡 提示：选择对应数字即可运行优化项目${NC}"
+    echo
+}
+
+# 系统初始化（下载和验证）
+initialize_system() {
+    log "正在初始化脚本..."
     
-    # 创建快捷命令
-    for func in ipv6 tcp bbr ssh dns; do
-        cat > "/usr/local/bin/optimize-$func" << EOF
-#!/bin/bash
-exec $main_script $func "\$@"
-EOF
+    # 开始进度显示
+    printf "${BLUE}[INFO]${NC} 初始化进度: "
+    
+    # 执行下载
+    install_tools
+    printf "▓▓"
+    
+    # 验证安装
+    if verify_installation; then
+        printf "▓ ✅\n"
+        success "初始化完成"
+    else
+        printf "▓ ❌\n"
+        error "初始化失败"
+        exit 1
+    fi
+}
+
+# 运行优化脚本
+run_optimization() {
+    local option="$1"
+    local main_script="$INSTALL_DIR/scripts/run_optimization.sh"
+    
+    if [[ -x "$main_script" ]]; then
+        "$main_script" "$option"
+    else
+        error "优化脚本未找到或无执行权限"
+        exit 1
+    fi
+}
+
+# 交互式菜单
+interactive_menu() {
+    while true; do
+        echo
+        echo -e "${CYAN}请选择要执行的优化项目：${NC}"
+        echo
+        echo "  1) TCP网络调优          # 推荐 - 提升网络性能"
+        echo "  2) DNS服务器配置        # 推荐 - 提升解析速度"
+        echo "  3) 一键开启BBR          # 高延迟网络优化"
+        echo "  4) SSH安全配置          # 端口和密码设置"
+        echo "  5) 禁用IPv6             # 避免双栈网络问题"
+        echo "  6) 全部优化             # 运行所有优化项目"
+        echo "  0) 退出程序"
+        echo
+        
+        read -p "$(echo -e "${YELLOW}请输入选择 (0-6): ${NC}")" choice
+        
+        case $choice in
+            1)
+                echo -e "${GREEN}开始 TCP网络调优...${NC}"
+                run_optimization "tcp"
+                ;;
+            2)
+                echo -e "${GREEN}开始 DNS服务器配置...${NC}"
+                run_optimization "dns"
+                ;;
+            3)
+                echo -e "${GREEN}开始 一键开启BBR...${NC}"
+                run_optimization "bbr"
+                ;;
+            4)
+                echo -e "${GREEN}开始 SSH安全配置...${NC}"
+                run_optimization "ssh"
+                ;;
+            5)
+                echo -e "${GREEN}开始 禁用IPv6...${NC}"
+                run_optimization "ipv6"
+                ;;
+            6)
+                echo -e "${GREEN}开始全部优化...${NC}"
+                run_optimization "all"
+                ;;
+            0)
+                echo -e "${YELLOW}感谢使用服务器优化工具！${NC}"
+                exit 0
+                ;;
+            *)
+                warn "无效选择，请输入 0-6 之间的数字"
+                sleep 1
+                ;;
+        esac
+        
+        # 询问是否继续
+        echo
+        read -p "$(echo -e "${CYAN}是否继续使用优化工具？(y/n): ${NC}")" continue_choice
+        case $continue_choice in
+            [Nn]|[Nn][Oo])
+                echo -e "${YELLOW}感谢使用服务器优化工具！${NC}"
+                exit 0
+                ;;
+            *)
+                continue
+                ;;
+        esac
     done
-    
-    chmod +x /usr/local/bin/server-optimize /usr/local/bin/optimize-*
-    success "全局命令创建完成"
-}
-
-# 显示使用说明
-show_usage() {
-    echo
-    echo -e "${GREEN}🎉 服务器优化工具安装完成！${NC}"
-    echo
-    echo -e "${CYAN}快速使用:${NC}"
-    echo "  server-optimize --help    # 查看帮助"
-    echo "  server-optimize tcp       # TCP网络优化"
-    echo "  server-optimize dns       # DNS服务器配置"
-    echo "  server-optimize bbr       # 启用BBR算法"
-    echo "  server-optimize ssh       # SSH安全配置"
-    echo "  server-optimize all       # 运行所有优化"
-    echo
-    echo -e "${CYAN}快捷命令:${NC}"
-    echo "  optimize-tcp              # 直接运行TCP优化"
-    echo "  optimize-dns              # 直接运行DNS配置"
-    echo "  optimize-bbr              # 直接启用BBR"
-    echo
-    echo -e "${YELLOW}现在开始优化您的服务器吧！${NC}"
-    echo
-}
-
-# 交互式选择
-interactive_setup() {
-    echo -e "${CYAN}是否立即运行优化？${NC}"
-    echo "1) TCP网络优化 (推荐)"
-    echo "2) DNS服务器配置"
-    echo "3) 全部优化"
-    echo "4) 稍后手动运行"
-    echo
-    
-    read -p "选择 (1-4): " choice
-    
-    case $choice in
-        1) server-optimize tcp ;;
-        2) server-optimize dns ;;
-        3) server-optimize all ;;
-        *) log "您可以稍后运行 server-optimize --help 查看使用方法" ;;
-    esac
 }
 
 # 主程序
 main() {
-    echo -e "${BLUE}╔════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║          服务器优化工具集合 - v$VERSION                   ║${NC}"
-    echo -e "${BLUE}╚════════════════════════════════════════════════════════╝${NC}"
+    echo -e "${BLUE}╔══════════════════════════════════════════════════════╗${NC}"
+    echo -e "${BLUE}║          服务器优化工具集合 - v$VERSION                 ║${NC}"
+    echo -e "${BLUE}╚══════════════════════════════════════════════════════╝${NC}"
     echo
     
     check_root
     check_system
-    install_tools
-    create_commands
-    show_usage
+    initialize_system
+    show_menu_info
     
-    # 如果不是通过参数 --install-only 调用，则显示交互选项
+    # 如果不是通过参数 --install-only 调用，则显示交互菜单
     if [[ "${1:-}" != "--install-only" ]]; then
-        interactive_setup
+        interactive_menu
     fi
 }
 

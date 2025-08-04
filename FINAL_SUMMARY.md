@@ -34,8 +34,16 @@ HTML_CONTENT
 ```
 
 **工作原理：**
-- **浏览器访问**: 忽略bash脚本部分，直接渲染HTML内容
+- **浏览器访问**: 使用CSS隐藏bash脚本内容，只显示HTML页面
 - **curl访问**: 执行bash脚本，重定向到安装脚本，忽略HTML内容
+
+**CSS隐藏技术：**
+```css
+/* 隐藏HTML标签外的bash脚本内容 */
+html { font-size: 0; line-height: 0; }
+/* 恢复HTML元素内的正常显示 */
+html * { font-size: initial; line-height: initial; }
+```
 
 ## 📁 完整项目结构
 
