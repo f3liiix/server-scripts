@@ -149,6 +149,8 @@ initialize_system() {
         error "脚本初始化失败 ❌"
         exit 1
     fi
+    
+    echo
 }
 
 # 运行优化脚本
@@ -179,7 +181,6 @@ interactive_menu() {
             echo
         fi
         
-        echo
         echo -e "${CYAN}🎉 请选择要执行的优化项目：${NC}"
         echo
         echo -e "  1) 更新系统/软件包       ${GRAY}# 推荐${NC}"
