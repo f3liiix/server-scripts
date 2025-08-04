@@ -37,7 +37,6 @@ readonly MAX_PORT=65535
 
 # 检查SSH服务状态
 check_ssh_service() {
-    log_step "检查SSH服务状态..."
     
     if ! command_exists sshd && ! command_exists ssh; then
         log_error "SSH服务未安装"
@@ -59,7 +58,7 @@ check_ssh_service() {
         fi
     fi
     
-    log_success "SSH服务运行正常"
+    log_info "SSH服务运行正常"
     return 0
 }
 
@@ -120,13 +119,6 @@ input_ssh_port() {
     local current_port
     current_port=$(get_current_ssh_port)
     
-    echo
-    echo "=== SSH端口配置 ==="
-    echo "当前SSH端口: $current_port"
-    echo "建议使用非标准端口 (如: 2222, 8022, 9022)"
-    echo "端口范围: $MIN_PORT-$MAX_PORT"
-    echo "==================="
-    
     local new_port
     while true; do
         read -p "请输入新的SSH端口 (回车保持当前端口 $current_port): " new_port
@@ -181,7 +173,7 @@ change_ssh_port() {
     # 修改端口配置
     if grep -q "^[[:space:]]*Port[[:space:]]" "$SSHD_CONFIG"; then
         # 替换现有Port行
-        sed -i "s/^[[:space:]]*Port[[:space:]].*/Port $new_port/" "$SSHD_CONFIG"
+        sed -i "/^[[:space:]]*Port[[:space:]]/c\Port $new_port" "$SSHD_CONFIG"
     else
         # 添加Port配置
         echo "Port $new_port" >> "$SSHD_CONFIG"
@@ -468,10 +460,15 @@ show_connection_info() {
     
     # 尝试获取服务器IP
     if command_exists curl; then
-        server_ip=$(curl -s ifconfig.me 2>/dev/null || echo "YOUR_SERVER_IP")
+        server_ip=$(curl -s --connect-timeout 5 ifconfig.me 2>/dev/null || echo "YOUR_SERVER_IP")
     elif command_exists wget; then
-        server_ip=$(wget -qO- ifconfig.me 2>/dev/null || echo "YOUR_SERVER_IP")
+        server_ip=$(wget -qO- --timeout=5 ifconfig.me 2>/dev/null || echo "YOUR_SERVER_IP")
     else
+        server_ip="YOUR_SERVER_IP"
+    fi
+    
+    # 验证IP地址格式
+    if [[ ! "$server_ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ "$server_ip" != "YOUR_SERVER_IP" ]]; then
         server_ip="YOUR_SERVER_IP"
     fi
     
