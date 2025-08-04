@@ -24,8 +24,8 @@ fi
 readonly SCRIPT_VERSION="2.0"
 
 # 可用的优化脚本映射
-SCRIPT_KEYS=("ipv6" "tcp" "bbr" "ssh" "dns")
-SCRIPT_FILES=("disable_ipv6.sh" "tcp_tuning.sh" "enable_bbr.sh" "configure_ssh.sh" "configure_dns.sh")
+SCRIPT_KEYS=("update" "ipv6" "tcp" "bbr" "ssh" "dns")
+SCRIPT_FILES=("system_update.sh" "disable_ipv6.sh" "tcp_tuning.sh" "enable_bbr.sh" "configure_ssh.sh" "configure_dns.sh")
 
 # --- 核心函数 ---
 
@@ -81,15 +81,11 @@ run_script() {
         return 1
     fi
     
-    # 执行脚本
-    log_info "正在执行: $script_key 优化脚本"
-    
     if ! bash "$script_path"; then
         log_error "$script_key 脚本执行失败"
         return 1
     fi
     
-    log_success "$script_key 脚本执行成功"
     return 0
 }
 

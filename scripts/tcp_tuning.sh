@@ -36,7 +36,7 @@ log_success() {
 }
 
 log_warning() {
-    echo -e "${YELLOW}[提醒]${NC} $1"
+    echo -e "${YELLOW}[注意]${NC} $1"
 }
 
 log_error() {
@@ -255,7 +255,6 @@ clean_invalid_conntrack_config() {
 
 # 应用TCP优化配置
 apply_tcp_optimization() {
-    log_step "应用TCP网络优化配置..."
     
     # 先清理可能存在的无效配置
     clean_invalid_conntrack_config
@@ -324,8 +323,6 @@ EOF
 
 # 应用文件描述符限制优化
 apply_ulimit_optimization() {
-    log_step "配置文件描述符限制..."
-    
     # 检查是否已存在配置
     if grep -q "文件描述符限制 (auto-configured)" "$LIMITS_CONF"; then
         log_warning "检测到已存在的文件描述符配置，将跳过重复配置"
@@ -353,19 +350,17 @@ EOF
 
 # 应用配置并验证
 apply_and_verify_config() {
-    log_step "应用sysctl配置..."
-    
     # 先测试配置的有效性，过滤掉无效参数
     local temp_output
     temp_output=$(sysctl -p 2>&1)
     local sysctl_exit_code=$?
     
     if [[ $sysctl_exit_code -eq 0 ]]; then
-        log_success "sysctl配置应用成功"
+        log_success "sysctl 配置应用成功"
     else
         # 检查是否只是conntrack相关的错误
         if echo "$temp_output" | grep -q "nf_conntrack_max.*No such file or directory"; then
-            log_warning "检测到conntrack模块未加载，跳过相关参数"
+            log_warning "检测到 conntrack 模块未加载，跳过相关参数"
             
             # 创建临时配置文件，过滤掉conntrack参数
             local temp_sysctl="/tmp/sysctl_filtered.conf"
@@ -373,12 +368,12 @@ apply_and_verify_config() {
             
             # 尝试应用过滤后的配置
             if sysctl -p "$temp_sysctl" >/dev/null 2>&1; then
-                log_success "sysctl配置应用成功（已跳过无效参数）"
+                log_success "sysctl 配置应用成功（已跳过无效参数）"
                 # 更新原配置文件，移除无效参数
                 cp "$temp_sysctl" "$SYSCTL_CONF"
-                log_info "已从配置文件中移除无效的conntrack参数"
+                log_info "已从配置文件中移除无效的 conntrack 参数"
             else
-                log_error "sysctl配置应用失败，检查详细错误..."
+                log_error "sysctl 配置应用失败，检查详细错误..."
                 sysctl -p "$temp_sysctl"
                 rm -f "$temp_sysctl"
                 return 1
@@ -386,7 +381,7 @@ apply_and_verify_config() {
             rm -f "$temp_sysctl"
         else
             # 其他类型的错误
-            log_error "sysctl配置应用失败，检查详细错误..."
+            log_error "sysctl 配置应用失败，检查详细错误..."
             echo "$temp_output" >&2
             return 1
         fi
@@ -406,28 +401,28 @@ configure_firewall() {
     
     # 检查并配置ufw
     if command -v ufw >/dev/null 2>&1; then
-        log_info "检测到ufw防火墙"
+        log_info "检测到 ufw 防火墙"
         if ufw --force enable >/dev/null 2>&1; then
             # 允许高端口范围以支持更多并发连接
             if ufw allow 10000:65535/tcp >/dev/null 2>&1; then
-                log_success "ufw规则配置成功"
+                log_success "ufw 规则配置成功"
             else
-                log_warning "ufw规则配置失败"
+                log_warning "ufw 规则配置失败"
             fi
         else
             log_warning "无法启用ufw防火墙"
         fi
     # 检查并配置iptables
     elif command -v iptables >/dev/null 2>&1; then
-        log_info "检测到iptables防火墙"
+        log_info "检测到 iptables 防火墙"
         # 为iptables添加基本规则（示例）
         if iptables -L INPUT -n | grep -q "tcp dpts:10000:65535" 2>/dev/null; then
-            log_info "iptables规则已存在"
+            log_info "iptables 规则已存在"
         else
-            log_info "建议手动配置iptables规则以允许高端口连接"
+            log_info "建议手动配置 iptables 规则以允许高端口连接"
         fi
     else
-        log_warning "未检测到支持的防火墙系统"
+        log_warning "未检测到支持的防火墙系统[跳过]"
     fi
 }
 
@@ -464,7 +459,7 @@ show_recommendations() {
     echo "1. 重启系统以确保所有优化完全生效"
     echo "2. 监控系统性能和网络连接状态"
     echo "3. 如需回滚，使用备份文件: $BACKUP_DIR"
-    echo "===================="
+    echo "====================="
 }
 
 # 错误处理和回滚
@@ -494,17 +489,15 @@ main() {
     
     # 1. 检查root权限
     if [[ $(id -u) -ne 0 ]]; then
-        log_error "此脚本必须使用root权限运行"
+        log_error "此脚本必须使用 root 权限运行"
         log_info "请使用: sudo $0"
         exit 1
     fi
     
     # 2. 系统兼容性检查
-    log_step "系统兼容性检查..."
     check_system_compatibility
     
     # 3. 内核版本检查
-    log_step "内核版本检查..."
     check_kernel_version || log_warning "建议升级内核以获得最佳性能"
     
     # 4. 创建备份
@@ -534,7 +527,7 @@ main() {
     # 清除错误陷阱
     trap - ERR
     
-    log_success "TCP网络优化完成！"
+    log_success "TCP网络调优完成！"
 }
 
 # 执行主程序

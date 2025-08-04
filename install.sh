@@ -99,6 +99,7 @@ install_tools() {
     local files=(
         "scripts/common_functions.sh"
         "scripts/run_optimization.sh"
+        "scripts/system_update.sh"
         "scripts/disable_ipv6.sh"
         "scripts/tcp_tuning.sh"
         "scripts/enable_bbr.sh"
@@ -132,13 +133,6 @@ verify_installation() {
     else
         return 1
     fi
-}
-
-# 显示菜单说明
-show_menu_info() {
-    echo
-    echo -e "${GREEN}🎉 服务器优化工具已就绪！${NC}"
-    echo
 }
 
 # 系统初始化（下载和验证）
@@ -185,41 +179,46 @@ interactive_menu() {
             echo
         fi
         
-        echo -e "${CYAN}请选择要执行的优化项目：${NC}"
+        echo -e "${CYAN}🎉 请选择要执行的优化项目：${NC}"
         echo
-        echo -e "  1) TCP网络调优          ${GRAY}# 推荐 - 提升网络性能${NC}"
-        echo -e "  2) DNS服务器配置        ${GRAY}# 推荐 - 提升解析速度${NC}"
-        echo -e "  3) 一键开启BBR          ${GRAY}# 高延迟网络优化${NC}"
-        echo -e "  4) SSH安全配置          ${GRAY}# 端口和密码设置${NC}"
-        echo -e "  5) 禁用IPv6             ${GRAY}# 避免双栈网络问题${NC}"
-        echo -e "  6) 全部优化             ${GRAY}# 运行所有优化项目${NC}"
+        echo -e "  1) 更新系统及软件包      ${GRAY}# 推荐 - 系统安全更新${NC}"
+        echo -e "  2) 一键开启BBR          ${GRAY}# 推荐 - 高延迟网络优化${NC}"
+        echo -e "  3) TCP网络调优          ${GRAY}# 推荐 - 提升网络性能${NC}"
+        echo -e "  4) DNS服务器配置        ${GRAY}# 推荐 - 提升解析速度${NC}"
+        echo -e "  5) SSH安全配置          ${GRAY}# 端口和密码设置${NC}"
+        echo -e "  6) 禁用IPv6             ${GRAY}# 避免双栈网络问题${NC}"
+        echo -e "  7) 全部优化             ${GRAY}# 运行所有优化项目${NC}"
         echo -e "  0) 退出脚本"
         echo
         
-        read -p "$(echo -e "${YELLOW}请输入选择 (0-6): ${NC}")" choice
+        read -p "$(echo -e "${YELLOW}请输入选择 (0-7): ${NC}")" choice
         
         case $choice in
             1)
-                echo -e "${GREEN}您选择了 [TCP网络调优] ...${NC}"
-                run_optimization "tcp"
+                echo -e "${GREEN}您选择了 [更新系统及软件包] ...${NC}"
+                run_optimization "update"
                 ;;
             2)
-                echo -e "${GREEN}您选择了 [DNS服务器配置] ...${NC}"
-                run_optimization "dns"
-                ;;
-            3)
                 echo -e "${GREEN}您选择了 [一键开启BBR] ...${NC}"
                 run_optimization "bbr"
                 ;;
+            3)
+                echo -e "${GREEN}您选择了 [TCP网络调优] ...${NC}"
+                run_optimization "tcp"
+                ;;
             4)
+                echo -e "${GREEN}您选择了 [DNS服务器配置] ...${NC}"
+                run_optimization "dns"
+                ;;
+            5)
                 echo -e "${GREEN}您选择了 [SSH安全配置] ...${NC}"
                 run_optimization "ssh"
                 ;;
-            5)
+            6)
                 echo -e "${GREEN}您选择了 [禁用IPv6] ...${NC}"
                 run_optimization "ipv6"
                 ;;
-            6)
+            7)
                 echo -e "${GREEN}您选择了 [全部优化] ...${NC}"
                 run_optimization "all"
                 ;;
@@ -228,7 +227,7 @@ interactive_menu() {
                 exit 0
                 ;;
             *)
-                warn "无效选择，请输入 0-6 之间的数字"
+                warn "无效选择，请输入 0-7 之间的数字"
                 sleep 1
                 continue
                 ;;
@@ -257,7 +256,6 @@ main() {
     check_root
     check_system
     initialize_system
-    show_menu_info
     
     # 如果不是通过参数 --install-only 调用，则显示交互菜单
     if [[ "${1:-}" != "--install-only" ]]; then

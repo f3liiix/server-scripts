@@ -33,7 +33,7 @@ log_success() {
 }
 
 log_warning() {
-    echo -e "${YELLOW}[提醒]${NC} $1"
+    echo -e "${YELLOW}[注意]${NC} $1"
 }
 
 log_error() {
