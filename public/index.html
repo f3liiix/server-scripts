@@ -1,0 +1,334 @@
+---
+---
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>服务器优化工具集合 - 一键安装</title>
+    <meta name="description" content="Linux服务器性能优化工具集合，一键安装TCP优化、BBR加速、DNS配置、SSH安全等功能">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6; 
+            color: #333; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 900px; 
+            margin: 0 auto; 
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            padding: 40px 0;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        .install-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .install-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        .command-box {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 16px;
+            margin: 15px 0;
+            position: relative;
+            overflow-x: auto;
+        }
+        .command-box::before {
+            content: "$ ";
+            color: #3498db;
+            font-weight: bold;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .copy-btn:hover {
+            background: #2980b9;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+        .feature-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+            transition: transform 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        .feature-card h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        .feature-card p {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        .usage-section {
+            background: #ecf0f1;
+            padding: 30px;
+            border-radius: 10px;
+            margin: 30px 0;
+        }
+        .usage-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        .usage-commands {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+            text-align: center;
+        }
+        .stat-item {
+            flex: 1;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            border-top: 1px solid #ecf0f1;
+            color: #7f8c8d;
+        }
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .main-content { padding: 20px; }
+            .header h1 { font-size: 2em; }
+            .command-box { font-size: 14px; }
+        }
+        
+        /* 隐藏脚本内容 */
+        .script-content { display: none; }
+    </style>
+</head>
+<body>
+    <!-- 如果是curl请求，显示脚本内容；如果是浏览器请求，显示HTML页面 -->
+    <script>
+        // 检测是否为curl请求
+        const userAgent = navigator.userAgent.toLowerCase();
+        const isCurl = userAgent.includes('curl') || 
+                      userAgent.includes('wget') || 
+                      userAgent.includes('httpie') ||
+                      !userAgent.includes('mozilla');
+        
+        if (isCurl) {
+            // 如果是命令行工具请求，重定向到脚本
+            window.location.replace('/install-online.sh');
+        }
+    </script>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🚀 服务器优化工具集合</h1>
+            <p>一键安装，极速优化您的Linux服务器性能</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="install-section">
+                <h2>⚡ 一键安装</h2>
+                <div class="command-box" onclick="copyToClipboard(this)">
+                    bash &lt;(curl -sL ss.hide.ss)
+                    <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard(this.parentElement)">复制</button>
+                </div>
+                <p style="color: #7f8c8d; margin-top: 10px;">
+                    ⚠️ 需要root权限，请使用 <code>sudo</code> 运行
+                </p>
+            </div>
+
+            <div class="success">
+                <strong>✅ 安装后立即可用：</strong> 全局命令 <code>server-optimize</code> 和快捷命令 <code>optimize-tcp</code>, <code>optimize-dns</code> 等
+            </div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number">1min</div>
+                    <div class="stat-label">安装时间</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">5+</div>
+                    <div class="stat-label">优化功能</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">50%</div>
+                    <div class="stat-label">性能提升</div>
+                </div>
+            </div>
+
+            <div class="features">
+                <div class="feature-card">
+                    <h3>🌐 TCP网络优化</h3>
+                    <p>全面优化TCP参数，提升网络传输性能30-50%，支持高并发连接</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🚀 BBR拥塞控制</h3>
+                    <p>启用Google BBR算法，在高延迟网络中性能提升2-10倍</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🔐 SSH安全配置</h3>
+                    <p>修改SSH端口和密码，增强服务器安全性，防止暴力破解</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🌐 DNS服务器配置</h3>
+                    <p>支持Google、Cloudflare、阿里云、腾讯DNS，提升解析速度</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🚫 IPv6禁用</h3>
+                    <p>彻底禁用IPv6协议，避免双栈网络问题，提升连接稳定性</p>
+                </div>
+                <div class="feature-card">
+                    <h3>⚡ 一键安装</h3>
+                    <p>无需下载，一条命令完成所有配置，支持批量服务器部署</p>
+                </div>
+            </div>
+
+            <div class="usage-section">
+                <h3>📱 安装后使用</h3>
+                <div class="usage-commands">
+                    # 查看帮助<br>
+                    server-optimize --help<br><br>
+                    
+                    # 单项优化<br>
+                    server-optimize tcp&nbsp;&nbsp;&nbsp;&nbsp;# TCP网络优化<br>
+                    server-optimize dns&nbsp;&nbsp;&nbsp;&nbsp;# DNS服务器配置<br>
+                    server-optimize bbr&nbsp;&nbsp;&nbsp;&nbsp;# 启用BBR算法<br>
+                    server-optimize ssh&nbsp;&nbsp;&nbsp;&nbsp;# SSH安全配置<br><br>
+                    
+                    # 全部优化<br>
+                    server-optimize all<br><br>
+                    
+                    # 快捷命令<br>
+                    optimize-tcp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 直接运行TCP优化<br>
+                    optimize-dns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 直接运行DNS配置
+                </div>
+            </div>
+
+            <div class="warning">
+                <strong>⚠️ 系统要求：</strong> Debian 9+ / Ubuntu 16.04+ / CentOS 7+ | Root权限 | 基本网络连接
+            </div>
+
+            <div class="usage-section">
+                <h3>🎯 常用场景</h3>
+                <p><strong>新服务器初始化：</strong></p>
+                <div class="usage-commands">
+                    # 一键完成所有优化<br>
+                    bash &lt;(curl -sL ss.hide.ss)<br>
+                    # 安装完成后选择 "3) 全部优化"
+                </div>
+                
+                <p><strong>批量服务器部署：</strong></p>
+                <div class="usage-commands">
+                    # 批量优化多台服务器<br>
+                    for server in server{1..10}.com; do<br>
+                    &nbsp;&nbsp;ssh root@$server 'bash &lt;(curl -sL ss.hide.ss)'<br>
+                    done
+                </div>
+            </div>
+
+            <div class="footer">
+                <p>🔗 <strong>项目地址：</strong> <a href="https://github.com/your-username/server-scripts" target="_blank">GitHub</a></p>
+                <p>📋 问题反馈和建议请提交到 GitHub Issues</p>
+                <p>⭐ 如果这个工具对您有帮助，请给项目一个Star！</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard(element) {
+            const text = element.textContent.replace('复制', '').trim();
+            navigator.clipboard.writeText(text).then(function() {
+                const btn = element.querySelector('.copy-btn');
+                const originalText = btn.textContent;
+                btn.textContent = '已复制';
+                btn.style.background = '#27ae60';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#3498db';
+                }, 2000);
+            }).catch(function() {
+                // 降级方案
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('命令已复制到剪贴板');
+            });
+        }
+    </script>
+</body>
+</html>

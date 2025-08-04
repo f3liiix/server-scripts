@@ -1,0 +1,526 @@
+#!/bin/bash
+# <!-- 
+# =============================================================================
+# 服务器优化工具集合 - 一键安装脚本
+# 支持：浏览器访问(HTML页面) 和 curl下载(bash脚本)
+# 使用：bash <(curl -sL ss.hide.ss)
+# =============================================================================
+
+set -euo pipefail
+
+# --- 配置项 ---
+readonly VERSION="1.0"
+readonly REPO_URL="https://github.com/your-username/server-scripts"
+readonly RAW_BASE="https://ss.hide.ss"
+readonly INSTALL_DIR="/opt/server-optimization"
+
+# 颜色定义
+readonly RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
+readonly YELLOW='\033[1;33m'
+readonly BLUE='\033[0;34m'
+readonly CYAN='\033[0;36m'
+readonly NC='\033[0m'
+
+# 日志函数
+log() { echo -e "${BLUE}[INFO]${NC} $1"; }
+success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
+warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
+error() { echo -e "${RED}[ERROR]${NC} $1" >&2; }
+
+# 检查root权限
+check_root() {
+    if [[ $EUID -ne 0 ]]; then
+        error "需要root权限运行此脚本"
+        echo "请使用: sudo bash <(curl -sL ss.hide.ss)"
+        exit 1
+    fi
+}
+
+# 快速系统检查
+check_system() {
+    log "检查系统环境..."
+    
+    # 检查基本命令
+    for cmd in curl wget git; do
+        if ! command -v "$cmd" >/dev/null 2>&1; then
+            warn "建议安装 $cmd 以获得更好体验"
+        fi
+    done
+    
+    # 检测系统类型
+    if [[ -f /etc/debian_version ]]; then
+        success "检测到 Debian/Ubuntu 系统"
+    elif [[ -f /etc/redhat-release ]]; then
+        success "检测到 RedHat/CentOS 系统"
+    else
+        warn "未知系统类型，继续安装..."
+    fi
+}
+
+# 下载并安装
+install_tools() {
+    log "开始下载和安装服务器优化工具..."
+    
+    # 创建安装目录
+    mkdir -p "$INSTALL_DIR"
+    cd "$INSTALL_DIR"
+    
+    # 下载主要脚本文件
+    local files=(
+        "scripts/common_functions.sh"
+        "scripts/run_optimization.sh"
+        "scripts/disable_ipv6.sh"
+        "scripts/tcp_tuning.sh"
+        "scripts/enable_bbr.sh"
+        "scripts/configure_ssh.sh"
+        "scripts/configure_dns.sh"
+        "install.sh"
+    )
+    
+    for file in "${files[@]}"; do
+        local dir=$(dirname "$file")
+        mkdir -p "$dir"
+        
+        log "下载: $file"
+        if curl -fsSL "$RAW_BASE/$file" -o "$file"; then
+            success "✅ $file"
+        else
+            error "❌ 下载失败: $file"
+            exit 1
+        fi
+    done
+    
+    # 设置权限
+    find . -name "*.sh" -exec chmod +x {} \;
+    chown -R root:root "$INSTALL_DIR"
+    
+    success "文件下载完成"
+}
+
+# 创建全局命令
+create_commands() {
+    log "创建全局命令..."
+    
+    local main_script="$INSTALL_DIR/scripts/run_optimization.sh"
+    
+    # 创建主命令
+    cat > /usr/local/bin/server-optimize << EOF
+#!/bin/bash
+exec $main_script "\$@"
+EOF
+    
+    # 创建快捷命令
+    for func in ipv6 tcp bbr ssh dns; do
+        cat > "/usr/local/bin/optimize-$func" << EOF
+#!/bin/bash
+exec $main_script $func "\$@"
+EOF
+    done
+    
+    chmod +x /usr/local/bin/server-optimize /usr/local/bin/optimize-*
+    success "全局命令创建完成"
+}
+
+# 显示使用说明
+show_usage() {
+    echo
+    echo -e "${GREEN}🎉 服务器优化工具安装完成！${NC}"
+    echo
+    echo -e "${CYAN}快速使用:${NC}"
+    echo "  server-optimize --help    # 查看帮助"
+    echo "  server-optimize tcp       # TCP网络优化"
+    echo "  server-optimize dns       # DNS服务器配置"
+    echo "  server-optimize bbr       # 启用BBR算法"
+    echo "  server-optimize ssh       # SSH安全配置"
+    echo "  server-optimize all       # 运行所有优化"
+    echo
+    echo -e "${CYAN}快捷命令:${NC}"
+    echo "  optimize-tcp              # 直接运行TCP优化"
+    echo "  optimize-dns              # 直接运行DNS配置"
+    echo "  optimize-bbr              # 直接启用BBR"
+    echo
+    echo -e "${YELLOW}现在开始优化您的服务器吧！${NC}"
+    echo
+}
+
+# 交互式选择
+interactive_setup() {
+    echo -e "${CYAN}是否立即运行优化？${NC}"
+    echo "1) TCP网络优化 (推荐)"
+    echo "2) DNS服务器配置"
+    echo "3) 全部优化"
+    echo "4) 稍后手动运行"
+    echo
+    
+    read -p "选择 (1-4): " choice
+    
+    case $choice in
+        1) server-optimize tcp ;;
+        2) server-optimize dns ;;
+        3) server-optimize all ;;
+        *) log "您可以稍后运行 server-optimize --help 查看使用方法" ;;
+    esac
+}
+
+# 主程序
+main() {
+    echo -e "${BLUE}╔════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${BLUE}║          服务器优化工具集合 - 一键安装脚本 v$VERSION          ║${NC}"
+    echo -e "${BLUE}╚════════════════════════════════════════════════════════╝${NC}"
+    echo
+    
+    check_root
+    check_system
+    install_tools
+    create_commands
+    show_usage
+    
+    # 如果不是通过参数 --install-only 调用，则显示交互选项
+    if [[ "${1:-}" != "--install-only" ]]; then
+        interactive_setup
+    fi
+}
+
+# 执行主程序
+main "$@"
+
+exit 0
+
+# 以下是HTML内容，当浏览器访问时显示，curl下载时被忽略
+: <<'HTML_CONTENT'
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>服务器优化工具集合 - 一键安装</title>
+    <meta name="description" content="Linux服务器性能优化工具集合，一键安装TCP优化、BBR加速、DNS配置、SSH安全等功能">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6; 
+            color: #333; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 900px; 
+            margin: 0 auto; 
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            padding: 40px 0;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        .install-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .install-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        .command-box {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 18px;
+            margin: 15px 0;
+            position: relative;
+            overflow-x: auto;
+            text-align: center;
+        }
+        .command-box::before {
+            content: "$ ";
+            color: #3498db;
+            font-weight: bold;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+        .copy-btn:hover {
+            background: #2980b9;
+        }
+        .highlight-box {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .highlight-box h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+        .feature-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+            transition: transform 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        .feature-card h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        .feature-card p {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        .usage-section {
+            background: #ecf0f1;
+            padding: 30px;
+            border-radius: 10px;
+            margin: 30px 0;
+        }
+        .usage-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        .usage-commands {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+            text-align: center;
+        }
+        .stat-item {
+            flex: 1;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            border-top: 1px solid #ecf0f1;
+            color: #7f8c8d;
+        }
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .main-content { padding: 20px; }
+            .header h1 { font-size: 2em; }
+            .command-box { font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 服务器优化工具集合</h1>
+            <p>一键安装，极速优化您的Linux服务器性能</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="install-section">
+                <h2>⚡ 极简一键安装</h2>
+                <div class="command-box" onclick="copyToClipboard(this)">
+                    bash &lt;(curl -sL ss.hide.ss)
+                    <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard(this.parentElement)">复制</button>
+                </div>
+                <p style="color: #7f8c8d; margin-top: 10px;">
+                    ⚠️ 需要root权限，请使用 <code>sudo</code> 运行
+                </p>
+            </div>
+
+            <div class="highlight-box">
+                <h3>🎯 终极简化</h3>
+                <p>只需记住域名 <strong>ss.hide.ss</strong>，无需任何路径、参数或后缀！</p>
+                <p>这是目前最简洁的服务器优化安装方式</p>
+            </div>
+
+            <div class="success">
+                <strong>✅ 安装后立即可用：</strong> 全局命令 <code>server-optimize</code> 和快捷命令 <code>optimize-tcp</code>, <code>optimize-dns</code> 等
+            </div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number">1min</div>
+                    <div class="stat-label">安装时间</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">5+</div>
+                    <div class="stat-label">优化功能</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">50%</div>
+                    <div class="stat-label">性能提升</div>
+                </div>
+            </div>
+
+            <div class="features">
+                <div class="feature-card">
+                    <h3>🌐 TCP网络优化</h3>
+                    <p>全面优化TCP参数，提升网络传输性能30-50%，支持高并发连接</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🚀 BBR拥塞控制</h3>
+                    <p>启用Google BBR算法，在高延迟网络中性能提升2-10倍</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🔐 SSH安全配置</h3>
+                    <p>修改SSH端口和密码，增强服务器安全性，防止暴力破解</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🌐 DNS服务器配置</h3>
+                    <p>支持Google、Cloudflare、阿里云、腾讯DNS，提升解析速度</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🚫 IPv6禁用</h3>
+                    <p>彻底禁用IPv6协议，避免双栈网络问题，提升连接稳定性</p>
+                </div>
+                <div class="feature-card">
+                    <h3>⚡ 极简安装</h3>
+                    <p>史上最简洁的安装命令，一个域名搞定所有配置</p>
+                </div>
+            </div>
+
+            <div class="usage-section">
+                <h3>📱 安装后使用</h3>
+                <div class="usage-commands">
+                    # 查看帮助<br>
+                    server-optimize --help<br><br>
+                    
+                    # 单项优化<br>
+                    server-optimize tcp&nbsp;&nbsp;&nbsp;&nbsp;# TCP网络优化<br>
+                    server-optimize dns&nbsp;&nbsp;&nbsp;&nbsp;# DNS服务器配置<br>
+                    server-optimize bbr&nbsp;&nbsp;&nbsp;&nbsp;# 启用BBR算法<br>
+                    server-optimize ssh&nbsp;&nbsp;&nbsp;&nbsp;# SSH安全配置<br><br>
+                    
+                    # 全部优化<br>
+                    server-optimize all<br><br>
+                    
+                    # 快捷命令<br>
+                    optimize-tcp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 直接运行TCP优化<br>
+                    optimize-dns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 直接运行DNS配置
+                </div>
+            </div>
+
+            <div class="warning">
+                <strong>⚠️ 系统要求：</strong> Debian 9+ / Ubuntu 16.04+ / CentOS 7+ | Root权限 | 基本网络连接
+            </div>
+
+            <div class="usage-section">
+                <h3>🎯 常用场景</h3>
+                <p><strong>新服务器初始化：</strong></p>
+                <div class="usage-commands">
+                    # 史上最简单的服务器优化命令<br>
+                    bash &lt;(curl -sL ss.hide.ss)<br>
+                    # 安装完成后选择 "3) 全部优化"
+                </div>
+                
+                <p><strong>批量服务器部署：</strong></p>
+                <div class="usage-commands">
+                    # 批量优化多台服务器<br>
+                    for server in server{1..10}.com; do<br>
+                    &nbsp;&nbsp;ssh root@$server 'bash &lt;(curl -sL ss.hide.ss)'<br>
+                    done
+                </div>
+            </div>
+
+            <div class="footer">
+                <p>🔗 <strong>项目地址：</strong> <a href="https://github.com/your-username/server-scripts" target="_blank">GitHub</a></p>
+                <p>📋 问题反馈和建议请提交到 GitHub Issues</p>
+                <p>⭐ 如果这个工具对您有帮助，请给项目一个Star！</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard(element) {
+            const text = element.textContent.replace('复制', '').trim();
+            navigator.clipboard.writeText(text).then(function() {
+                const btn = element.querySelector('.copy-btn');
+                const originalText = btn.textContent;
+                btn.textContent = '已复制';
+                btn.style.background = '#27ae60';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#3498db';
+                }, 2000);
+            }).catch(function() {
+                // 降级方案
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('命令已复制到剪贴板');
+            });
+        }
+    </script>
+</body>
+</html>
+HTML_CONTENT

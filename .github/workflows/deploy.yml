@@ -1,0 +1,207 @@
+name: Deploy Server Optimization Tools
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    name: Validate Scripts
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Validate shell scripts
+      run: |
+        echo "🔍 Validating shell scripts..."
+        find . -name "*.sh" -type f | while read -r script; do
+          echo "Checking: $script"
+          if ! bash -n "$script"; then
+            echo "❌ Syntax error in: $script"
+            exit 1
+          fi
+        done
+        echo "✅ All scripts are valid"
+        
+    - name: Check script permissions
+      run: |
+        echo "🔧 Checking script permissions..."
+        find . -name "*.sh" -type f | while read -r script; do
+          if [[ ! -x "$script" ]]; then
+            echo "⚠️ Script not executable: $script"
+            chmod +x "$script"
+            echo "✅ Fixed permissions for: $script"
+          fi
+        done
+        
+    - name: Test installation scripts
+      run: |
+        echo "🧪 Testing installation scripts..."
+        # 测试bootstrap.sh语法
+        bash -n bootstrap.sh
+        # 测试install-online.sh语法
+        bash -n install-online.sh
+        echo "✅ Installation scripts are valid"
+
+  update-urls:
+    runs-on: ubuntu-latest
+    name: Update Download URLs
+    needs: validate
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Update repository URLs
+      run: |
+        echo "🔄 Updating repository URLs..."
+        
+        # 获取仓库信息
+        REPO_OWNER="${{ github.repository_owner }}"
+        REPO_NAME="${{ github.event.repository.name }}"
+        
+        echo "Repository: $REPO_OWNER/$REPO_NAME"
+        
+        # 更新bootstrap.sh中的URL
+        sed -i "s|your-username|$REPO_OWNER|g" bootstrap.sh
+        sed -i "s|server-scripts|$REPO_NAME|g" bootstrap.sh
+        
+        # 更新install-online.sh中的URL
+        sed -i "s|your-username|$REPO_OWNER|g" install-online.sh
+        sed -i "s|server-scripts|$REPO_NAME|g" install-online.sh
+        
+        # 更新文档中的示例URL (DEPLOY.md已删除，保留其他文档更新)
+        # sed -i "s|your-username|$REPO_OWNER|g" DEPLOY.md
+        # sed -i "s|server-scripts|$REPO_NAME|g" DEPLOY.md
+        
+        echo "✅ URLs updated successfully"
+        
+    - name: Commit updated URLs
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        if git diff --quiet; then
+          echo "No changes to commit"
+        else
+          git add bootstrap.sh install-online.sh
+          git commit -m "🤖 Auto-update repository URLs"
+          git push
+        fi
+
+  create-release:
+    runs-on: ubuntu-latest
+    name: Create Release
+    needs: [validate, update-urls]
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Get version from tag
+      id: version
+      run: |
+        VERSION=${GITHUB_REF#refs/tags/v}
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Version: $VERSION"
+        
+    - name: Update version.txt
+      run: |
+        echo "${{ steps.version.outputs.version }}" > version.txt
+        
+    - name: Create changelog
+      id: changelog
+      run: |
+        echo "## 🚀 版本 ${{ steps.version.outputs.version }}" > CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        echo "### 新增功能" >> CHANGELOG.md
+        echo "- 完整的服务器优化工具集合" >> CHANGELOG.md
+        echo "- 一键在线安装功能" >> CHANGELOG.md
+        echo "- IPv6禁用、TCP优化、BBR启用" >> CHANGELOG.md
+        echo "- SSH安全配置、DNS服务器配置" >> CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        echo "### 安装方式" >> CHANGELOG.md
+        echo '```bash' >> CHANGELOG.md
+        echo "# 简化安装" >> CHANGELOG.md
+        echo "bash <(curl -sL https://raw.githubusercontent.com/${{ github.repository }}/main/install-online.sh)" >> CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        echo "# 完整安装" >> CHANGELOG.md
+        echo "bash <(curl -sL https://raw.githubusercontent.com/${{ github.repository }}/main/bootstrap.sh)" >> CHANGELOG.md
+        echo '```' >> CHANGELOG.md
+        
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Server Optimization Tools v${{ steps.version.outputs.version }}
+        body_path: CHANGELOG.md
+        draft: false
+        prerelease: false
+
+  deploy-pages:
+    runs-on: ubuntu-latest
+    name: Deploy to GitHub Pages
+    needs: validate
+    if: github.ref == 'refs/heads/main'
+    
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Prepare Pages content
+      run: |
+        mkdir -p public
+        
+        # 复制混合主页文件（同时支持HTML和bash脚本）
+        cp index.html public/index.html
+        
+        # 复制安装脚本到public目录，支持自定义域名访问
+        cp install-online.sh public/install-online.sh
+        cp install-online.sh public/install          # 别名，支持 ss.hide.ss/install
+        cp bootstrap.sh public/bootstrap.sh
+        cp bootstrap.sh public/bootstrap             # 别名，支持 ss.hide.ss/bootstrap  
+        cp version.txt public/version.txt
+        cp version.txt public/version                # 别名，支持 ss.hide.ss/version
+        
+        # 复制CNAME文件以支持自定义域名
+        cp CNAME public/CNAME
+        
+        # 验证混合主页文件
+        if [[ -f public/index.html ]]; then
+            echo "✅ 混合主页文件（HTML+Bash）已准备完成"
+            # 验证文件包含必要的bash脚本内容
+            if head -1 public/index.html | grep -q "#!/bin/bash"; then
+                echo "✅ 脚本功能验证通过"
+            else
+                echo "❌ 主页文件缺少bash脚本功能"
+            fi
+        else
+            echo "❌ 主页文件缺失"
+            exit 1
+        fi
+        
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+      
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: ./public
+        
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
