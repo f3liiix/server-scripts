@@ -182,8 +182,8 @@ interactive_menu() {
         
         echo -e "${CYAN}🎉 请选择要执行的优化项目：${NC}"
         echo
-        echo -e "  1) 更新系统/软件包       ${GRAY}# 推荐${NC}"
-        echo -e "  2) 开启BBR             ${GRAY}# 推荐${NC}"
+        echo -e "  1) 更新系统/软件包      ${GRAY}# 推荐${NC}"
+        echo -e "  2) 开启BBR              ${GRAY}# 推荐${NC}"
         echo -e "  3) TCP网络调优          ${GRAY}# 推荐${NC}"
         echo -e "  4) DNS服务器配置        ${GRAY}# 推荐${NC}"
         echo -e "  5) SSH安全配置          ${GRAY}# SSH端口和密码修改${NC}"
