@@ -94,17 +94,6 @@ validate_port() {
         return 1
     fi
     
-    # 检查端口是否被占用（静默检查，不显示警告）
-    if command_exists netstat; then
-        if netstat -tuln | grep -q ":$port "; then
-            return 1
-        fi
-    elif command_exists ss; then
-        if ss -tuln | grep -q ":$port "; then
-            return 1
-        fi
-    fi
-    
     return 0
 }
 
@@ -314,10 +303,13 @@ change_user_password() {
 
 # 选择用户
 select_user() {
+    local current_user
+    current_user=$(whoami)
+    
     echo
     echo "=== 选择目标用户 ==="
     echo "1) root (系统管理员)"
-    echo "2) $(whoami) (当前用户)"
+    echo "2) $current_user (当前用户)"
     echo "3) 其他用户 (手动输入)"
     echo "=================="
     
@@ -328,7 +320,7 @@ select_user() {
     
     while [[ $attempts -lt $max_attempts ]]; do
         ((attempts++))
-        read -p "请选择要修改密码的用户 (1-3): " choice
+        read -p "请选择要修改密码的用户 (1-3 或直接输入用户名): " choice
         
         case "$choice" in
             1)
@@ -337,7 +329,7 @@ select_user() {
                 break
                 ;;
             2)
-                username="$(whoami)"
+                username="$current_user"
                 log_info "已选择用户: $username"
                 break
                 ;;
@@ -354,13 +346,39 @@ select_user() {
                 log_info "已选择用户: $username"
                 break
                 ;;
+            "root")
+                username="root"
+                log_info "已选择用户: $username"
+                break
+                ;;
+            "$current_user")
+                username="$current_user"
+                log_info "已选择用户: $username"
+                break
+                ;;
             *)
-                log_warning "请输入 1、2 或 3 (尝试 $attempts/$max_attempts)"
-                if [[ $attempts -eq $max_attempts ]]; then
-                    log_error "选择次数过多，退出用户选择"
-                    return 1
+                # 检查是否直接输入了用户名
+                if [[ -n "$choice" ]]; then
+                    if id "$choice" >/dev/null 2>&1; then
+                        username="$choice"
+                        log_info "已选择用户: $username"
+                        break
+                    else
+                        log_error "用户 $choice 不存在，请重新选择"
+                        if [[ $attempts -eq $max_attempts ]]; then
+                            log_error "选择次数过多，退出用户选择"
+                            return 1
+                        fi
+                        continue
+                    fi
+                else
+                    log_warning "请输入 1、2、3 或直接输入用户名 (尝试 $attempts/$max_attempts)"
+                    if [[ $attempts -eq $max_attempts ]]; then
+                        log_error "选择次数过多，退出用户选择"
+                        return 1
+                    fi
+                    continue
                 fi
-                continue
                 ;;
         esac
     done
