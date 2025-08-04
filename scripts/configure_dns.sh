@@ -260,6 +260,9 @@ test_dns_servers() {
     IFS=' ' read -ra dns_array <<< "$dns_list"
     
     log_step "测试DNS服务器可达性..."
+    log_info "调试信息: 接收到的dns_list='$dns_list'"
+    log_info "调试信息: 解析后的dns_array长度=${#dns_array[@]}"
+    log_info "调试信息: dns_array内容=${dns_array[*]}"
     
     local working_dns=()
     local failed_dns=()
@@ -625,6 +628,8 @@ configure_preset_dns() {
     echo
     echo "=== 配置 $description ==="
     echo "DNS服务器: $dns_servers"
+    echo "调试信息: dns_servers变量长度=${#dns_servers}"
+    echo "调试信息: dns_servers变量内容='$dns_servers'"
     echo
     
     if ! test_dns_servers "$dns_servers"; then
@@ -661,6 +666,8 @@ configure_custom_dns() {
         echo
         echo "=== 配置自定义DNS服务器 ==="
         echo "DNS服务器: $custom_dns"
+        echo "调试信息: custom_dns变量长度=${#custom_dns}"
+        echo "调试信息: custom_dns变量内容='$custom_dns'"
         echo
         
         if ! test_dns_servers "$custom_dns"; then
