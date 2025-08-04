@@ -306,12 +306,12 @@ select_user() {
     local current_user
     current_user=$(whoami)
     
-    echo
-    echo "=== 选择目标用户 ==="
-    echo "1) root (系统管理员)"
-    echo "2) $current_user (当前用户)"
-    echo "3) 其他用户 (手动输入)"
-    echo "=================="
+    echo >&2
+    echo "=== 选择目标用户 ===" >&2
+    echo "1) root (系统管理员)" >&2
+    echo "2) $current_user (当前用户)" >&2
+    echo "3) 其他用户 (手动输入)" >&2
+    echo "==================" >&2
     
     local choice
     local username
