@@ -7,6 +7,12 @@ on:
   pull_request:
     branches: [ main ]
 
+# 添加权限配置，允许Actions写入仓库和Pages
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -48,57 +54,12 @@ jobs:
         bash -n install-online.sh
         echo "✅ Installation scripts are valid"
 
-  update-urls:
-    runs-on: ubuntu-latest
-    name: Update Download URLs
-    needs: validate
-    if: github.ref == 'refs/heads/main'
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Update repository URLs
-      run: |
-        echo "🔄 Updating repository URLs..."
-        
-        # 获取仓库信息
-        REPO_OWNER="${{ github.repository_owner }}"
-        REPO_NAME="${{ github.event.repository.name }}"
-        
-        echo "Repository: $REPO_OWNER/$REPO_NAME"
-        
-        # 更新bootstrap.sh中的URL
-        sed -i "s|your-username|$REPO_OWNER|g" bootstrap.sh
-        sed -i "s|server-scripts|$REPO_NAME|g" bootstrap.sh
-        
-        # 更新install-online.sh中的URL
-        sed -i "s|your-username|$REPO_OWNER|g" install-online.sh
-        sed -i "s|server-scripts|$REPO_NAME|g" install-online.sh
-        
-        # 更新文档中的示例URL (DEPLOY.md已删除，保留其他文档更新)
-        # sed -i "s|your-username|$REPO_OWNER|g" DEPLOY.md
-        # sed -i "s|server-scripts|$REPO_NAME|g" DEPLOY.md
-        
-        echo "✅ URLs updated successfully"
-        
-    - name: Commit updated URLs
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        
-        if git diff --quiet; then
-          echo "No changes to commit"
-        else
-          git add bootstrap.sh install-online.sh
-          git commit -m "🤖 Auto-update repository URLs"
-          git push
-        fi
+  # URL更新步骤已移除，脚本中的URL已直接固定
 
   create-release:
     runs-on: ubuntu-latest
     name: Create Release
-    needs: [validate, update-urls]
+    needs: validate
     if: startsWith(github.ref, 'refs/tags/v')
     
     steps:

@@ -19,7 +19,7 @@ readonly TEMP_DIR="/tmp/server-optimization-$$"
 readonly LOG_FILE="/var/log/server-optimization-install.log"
 
 # GitHub仓库信息 (使用自定义域名)
-readonly REPO_URL="https://github.com/your-username/server-scripts"
+readonly REPO_URL="https://github.com/f3liiix/server-scripts"
 readonly RAW_URL="https://ss.hide.ss"
 
 # 脚本文件列表

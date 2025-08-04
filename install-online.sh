@@ -10,7 +10,7 @@ set -euo pipefail
 
 # --- 配置项 ---
 readonly VERSION="1.0"
-readonly REPO_URL="https://github.com/your-username/server-scripts"
+readonly REPO_URL="https://github.com/f3liiix/server-scripts"
 readonly RAW_BASE="https://ss.hide.ss"
 readonly INSTALL_DIR="/opt/server-optimization"
 
