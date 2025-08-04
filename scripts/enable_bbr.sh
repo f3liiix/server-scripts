@@ -529,45 +529,36 @@ prompt_reboot() {
 # 主程序
 main() {
     echo
-    
-    # 1. 权限检查
+    # 权限检查
     if ! check_root; then
         exit 1
     fi
-    
-    # 2. 显示系统信息
+    # 显示系统信息
     show_system_info
-    
-    # 3. 检查虚拟化环境
+    # 检查虚拟化环境
     if ! check_virtualization; then
-        exit 1
+        return 1
     fi
-    
-    # 4. 检查系统兼容性
+    # 检查系统兼容性
     if ! is_debian_based; then
         local system_info
         system_info=$(detect_system)
         local distro="${system_info%:*}"
-        
         if [[ "$distro" != "centos" ]]; then
             log_error "不支持的操作系统，仅支持 Debian、Ubuntu 和 CentOS"
-            exit 1
+            return 1
         fi
     fi
-    
-    # 5. 检查BBR当前状态
+    # 检查BBR当前状态
     if check_bbr_status; then
         log_success "BBR已经启用，无需重复配置"
         verify_bbr_status
-        exit 0
+        return 0
     fi
-    
-    # 6. 检查内核版本
+    # 检查内核版本
     local kernel_upgrade_needed=false
     if check_kernel_bbr_support; then
         log_success "当前内核版本支持BBR"
-        
-        # 检查BBR是否可用
         if check_bbr_available; then
             log_info "BBR模块可用，直接配置启用"
         else
@@ -576,45 +567,39 @@ main() {
     else
         log_warning "当前内核版本不支持BBR，需要升级内核"
         kernel_upgrade_needed=true
-        
-        # 用户确认
         if ! confirm_action "是否继续安装新内核以支持BBR？" "Y"; then
             log_info "用户取消了内核升级"
-            exit 0
+            return 0
         fi
     fi
-    
-    # 7. 安装内核（如果需要）
+    # 安装内核（如果需要）
     if [[ "$kernel_upgrade_needed" == true ]]; then
         if ! install_bbr_kernel; then
             log_error "内核安装失败"
-            exit 1
+            return 1
         fi
     fi
-    
-    # 8. 配置BBR
+    # 配置BBR
     if ! configure_bbr; then
         log_error "BBR配置失败"
-        exit 1
+        return 1
     fi
-    
-    # 9. 验证BBR状态
+    # 验证BBR状态
     if verify_bbr_status; then
         show_bbr_recommendations
-        
-        # 如果安装了新内核，询问是否重启
         if [[ "$kernel_upgrade_needed" == true ]]; then
             prompt_reboot
         fi
-        
         log_success "BBR启用完成！"
+        return 0
     else
         if [[ "$kernel_upgrade_needed" == true ]]; then
             log_info "新内核已安装，BBR将在重启后生效"
             prompt_reboot
+            return 0
         else
             log_error "BBR启用失败，请检查系统日志"
-            exit 1
+            return 1
         fi
     fi
 }

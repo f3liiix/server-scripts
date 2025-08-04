@@ -557,32 +557,7 @@ main() {
     # 4. 创建日志目录
     mkdir -p "$(dirname "$LOG_FILE")"
     
-    # 5. 处理其他命令行参数
-    if [[ $# -gt 0 ]]; then
-        case "$1" in
-            --port)
-                local new_port
-                new_port=$(input_ssh_port)
-                if change_ssh_port "$new_port"; then
-                    restart_ssh_service
-                    verify_ssh_config
-                    show_connection_info "$new_port"
-                    show_firewall_suggestions "$new_port"
-                fi
-                exit 0
-                ;;
-            --password)
-                local username
-                username=$(select_user)
-                local password
-                password=$(input_user_password "$username")
-                change_user_password "$username" "$password"
-                exit 0
-                ;;
-        esac
-    fi
-    
-    # 5. 交互式菜单
+    # 只保留交互式菜单
     while true; do
         show_main_menu
         
@@ -596,12 +571,14 @@ main() {
                 local new_port
                 new_port=$(input_ssh_port)
                 
-                if change_ssh_port "$new_port"; then
-                    if restart_ssh_service; then
-                        verify_ssh_config
-                        show_connection_info "$new_port"
-                        show_firewall_suggestions "$new_port"
-                    fi
+                if ! change_ssh_port "$new_port"; then
+                    log_error "SSH端口修改失败"
+                elif ! restart_ssh_service; then
+                    log_error "SSH服务重启失败"
+                else
+                    verify_ssh_config
+                    show_connection_info "$new_port"
+                    show_firewall_suggestions "$new_port"
                 fi
                 ;;
             2)
@@ -611,7 +588,9 @@ main() {
                 username=$(select_user)
                 local password
                 password=$(input_user_password "$username")
-                change_user_password "$username" "$password"
+                if ! change_user_password "$username" "$password"; then
+                    log_error "用户密码修改失败"
+                fi
                 ;;
             3)
                 echo
@@ -630,10 +609,12 @@ main() {
                 # 执行修改
                 local success=true
                 if ! change_ssh_port "$new_port"; then
+                    log_error "SSH端口修改失败"
                     success=false
                 fi
                 
                 if ! change_user_password "$username" "$password"; then
+                    log_error "用户密码修改失败"
                     success=false
                 fi
                 
@@ -642,6 +623,8 @@ main() {
                         verify_ssh_config
                         show_connection_info "$new_port"
                         show_firewall_suggestions "$new_port"
+                    else
+                        log_error "SSH服务重启失败"
                     fi
                 fi
                 ;;

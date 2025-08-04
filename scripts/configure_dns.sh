@@ -415,16 +415,26 @@ EOF
 options timeout:2 attempts:3 rotate single-request-reopen
 EOF
     
-    # 替换resolv.conf
+    # 写入前先移除不可变属性
+    if command -v chattr >/dev/null 2>&1; then
+        chattr -i "$RESOLV_CONF" 2>/dev/null || true
+    fi
+    
+    # 检查是否为符号链接
+    if [[ -L "$RESOLV_CONF" ]]; then
+        log_error "检测到 /etc/resolv.conf 是符号链接，可能被 systemd-resolved 或 NetworkManager 管理。请先关闭相关服务的 DNS 管理功能，再重试。"
+        rm -f "$temp_file"
+        return 1
+    fi
+    
     if mv "$temp_file" "$RESOLV_CONF"; then
         log_success "DNS配置已写入 $RESOLV_CONF"
-        
         # 设置只读属性防止被覆盖
-        if command_exists chattr; then
+        if command -v chattr >/dev/null 2>&1; then
             chattr +i "$RESOLV_CONF" 2>/dev/null || true
         fi
     else
-        log_error "无法写入DNS配置文件"
+        log_error "无法写入DNS配置文件。请检查：1) 是否有root权限；2) /etc/resolv.conf 是否被保护（如 chattr +i）；3) 是否被 systemd-resolved/NetworkManager 管理。"
         rm -f "$temp_file"
         return 1
     fi
@@ -702,103 +712,7 @@ restore_dns_backup() {
 
 # 主程序
 main() {
-    # 1. 优先处理--help参数（无需root权限）
-    if [[ $# -gt 0 ]] && [[ "$1" == "--help" ]]; then
-        echo "用法: $0 [选项]"
-        echo "选项:"
-        echo "  --google      使用Google DNS (8.8.8.8, 8.8.4.4)"
-        echo "  --cloudflare  使用Cloudflare DNS (1.1.1.1, 1.0.0.1)"
-        echo "  --ali         使用阿里云DNS (223.5.5.5, 223.6.6.6)"
-        echo "  --tencent     使用腾讯DNS (119.29.29.29, 182.254.116.116)"
-        echo "  --test        测试当前DNS解析"
-        echo "  --help        显示帮助信息"
-        echo ""
-        echo "功能说明:"
-        echo "  - 配置Google、Cloudflare、阿里云或腾讯DNS服务器"
-        echo "  - 支持自定义DNS服务器地址"
-        echo "  - 自动检测DNS管理方式并适配"
-        echo "  - DNS服务器可达性测试"
-        echo "  - 配置文件自动备份和回滚"
-        echo ""
-        echo "注意: 此脚本需要root权限运行"
-        exit 0
-    fi
-    
-    # 2. 权限检查
-    if ! check_root; then
-        exit 1
-    fi
-    
-    # 3. 创建日志目录
-    mkdir -p "$(dirname "$LOG_FILE")"
-    
-    # 4. 处理命令行参数
-    if [[ $# -gt 0 ]]; then
-        case "$1" in
-            --google)
-                local dns_servers
-                dns_servers=$(get_preset_dns "google")
-                log_info "配置Google DNS: $dns_servers"
-                backup_dns_config
-                if test_dns_servers "$dns_servers" && apply_dns_config "$dns_servers" && verify_dns_config; then
-                    show_dns_result
-                    log_success "Google DNS配置完成！"
-                else
-                    rollback_dns_config
-                    exit 1
-                fi
-                exit 0
-                ;;
-            --cloudflare)
-                local dns_servers
-                dns_servers=$(get_preset_dns "cloudflare")
-                log_info "配置Cloudflare DNS: $dns_servers"
-                backup_dns_config
-                if test_dns_servers "$dns_servers" && apply_dns_config "$dns_servers" && verify_dns_config; then
-                    show_dns_result
-                    log_success "Cloudflare DNS配置完成！"
-                else
-                    rollback_dns_config
-                    exit 1
-                fi
-                exit 0
-                ;;
-            --ali)
-                local dns_servers
-                dns_servers=$(get_preset_dns "ali")
-                log_info "配置阿里云DNS: $dns_servers"
-                backup_dns_config
-                if test_dns_servers "$dns_servers" && apply_dns_config "$dns_servers" && verify_dns_config; then
-                    show_dns_result
-                    log_success "阿里云DNS配置完成！"
-                else
-                    rollback_dns_config
-                    exit 1
-                fi
-                exit 0
-                ;;
-            --tencent)
-                local dns_servers
-                dns_servers=$(get_preset_dns "tencent")
-                log_info "配置腾讯DNS: $dns_servers"
-                backup_dns_config
-                if test_dns_servers "$dns_servers" && apply_dns_config "$dns_servers" && verify_dns_config; then
-                    show_dns_result
-                    log_success "腾讯DNS配置完成！"
-                else
-                    rollback_dns_config
-                    exit 1
-                fi
-                exit 0
-                ;;
-            --test)
-                test_current_dns
-                exit 0
-                ;;
-        esac
-    fi
-    
-    # 5. 交互式菜单
+    # 只保留交互式菜单
     while true; do
         show_main_menu
         
@@ -809,32 +723,44 @@ main() {
             1)
                 echo
                 log_info "您选择了 [Cloudflare DNS] ..."
-                configure_preset_dns "cloudflare"
+                if ! configure_preset_dns "cloudflare"; then
+                    log_error "Cloudflare DNS配置失败"
+                fi
                 ;;
             2)
                 echo
                 log_info "您选择了 [Google DNS] ..."
-                configure_preset_dns "google"
+                if ! configure_preset_dns "google"; then
+                    log_error "Google DNS配置失败"
+                fi
                 ;;
             3)
                 echo
                 log_info "您选择了 [阿里DNS] ..."
-                configure_preset_dns "ali"
+                if ! configure_preset_dns "ali"; then
+                    log_error "阿里DNS配置失败"
+                fi
                 ;;
             4)
                 echo
                 log_info "您选择了 [腾讯DNS] ..."
-                configure_preset_dns "tencent"
+                if ! configure_preset_dns "tencent"; then
+                    log_error "腾讯DNS配置失败"
+                fi
                 ;;
             5)
                 echo
                 log_info "您选择了 [自定义DNS服务器] ..."
-                configure_custom_dns
+                if ! configure_custom_dns; then
+                    log_error "自定义DNS配置失败"
+                fi
                 ;;
             6)
                 echo
                 log_info "您选择了 [恢复DNS配置备份] ..."
-                restore_dns_backup
+                if ! restore_dns_backup; then
+                    log_error "DNS备份恢复失败"
+                fi
                 ;;
             0)
                 log_info "退出DNS配置工具"

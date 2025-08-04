@@ -159,10 +159,13 @@ run_optimization() {
     local main_script="$INSTALL_DIR/scripts/run_optimization.sh"
     
     if [[ -x "$main_script" ]]; then
-        "$main_script" "$option"
+        if ! "$main_script" "$option"; then
+            error "优化脚本执行失败，但将继续运行"
+            return 1
+        fi
     else
         error "优化脚本未找到或无执行权限"
-        exit 1
+        return 1
     fi
 }
 

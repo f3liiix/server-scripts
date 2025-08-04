@@ -138,7 +138,7 @@ main() {
     if [[ -z "$target_script" ]]; then
         log_error "请指定要运行的脚本"
         log_info "支持的脚本: ${SCRIPT_KEYS[*]} all"
-        exit 1
+        return 1
     fi
     
     # 执行脚本
@@ -149,9 +149,11 @@ main() {
     else
         log_error "未知的脚本: $target_script"
         log_info "支持的脚本: ${SCRIPT_KEYS[*]} all"
-        exit 1
+        return 1
     fi
 }
 
 # 执行主程序
-main "$@"
+if ! main "$@"; then
+    exit 1
+fi

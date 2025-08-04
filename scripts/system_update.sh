@@ -211,42 +211,33 @@ check_reboot_required() {
 # 主程序
 main() {
     echo
-    
     # 检查root权限
     if ! check_root; then
         exit 1
     fi
-    
     # 检测包管理器
     local pkg_manager
     pkg_manager=$(detect_package_manager)
-    
     if [[ "$pkg_manager" == "unknown" ]]; then
         log_error "未检测到支持的包管理器"
         log_info "支持的包管理器: apt, yum, dnf, pacman, zypper"
         exit 1
     fi
-    
     log_info "检测到包管理器: $pkg_manager"
     echo
-    
     # 确认操作
     if ! confirm_action "确定要更新系统和软件包吗？" "Y"; then
         log_info "用户取消了系统更新操作"
-        exit 0
+        return 0
     fi
-
     log_info "开始系统更新，这可能需要一会时间..."
     echo
-    
     # 执行更新步骤
     if update_package_list "$pkg_manager" && \
        upgrade_packages "$pkg_manager" && \
        cleanup_system "$pkg_manager"; then
-        
         echo
         show_update_summary "$pkg_manager"
-        
         log_success "系统更新完成！"
         return 0
     else

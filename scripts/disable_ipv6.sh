@@ -221,46 +221,38 @@ rollback_changes() {
 main() {
     echo "=== IPv6 禁用脚本 v2.0 ==="
     echo
-    
     # 1. 检查root权限
     if [[ $(id -u) -ne 0 ]]; then
         log_error "此脚本需要以 root 权限运行"
         log_info "请尝试使用 'sudo $0' 来执行"
         exit 1
     fi
-    
     # 2. 检查系统兼容性
     check_compatibility
-    
     # 3. 检查当前IPv6状态
     if is_ipv6_disabled; then
         log_info "IPv6 已处于禁用状态"
         verify_ipv6_disabled
-        exit 0
+        return 0
     fi
-    
     # 4. 创建备份
     local backup_file
     backup_file=$(backup_config)
-    
     # 5. 设置错误处理
     trap "rollback_changes '$backup_file'" ERR
-    
     # 6. 添加配置
     add_ipv6_config
-    
     # 7. 应用配置
     apply_config
-    
     # 8. 验证结果
     if verify_ipv6_disabled; then
         show_recommendations
         log_success "IPv6 禁用操作完成！"
+        return 0
     else
         log_error "IPv6 禁用失败，请检查系统日志"
-        exit 1
+        return 1
     fi
-    
     # 清除错误陷阱
     trap - ERR
 }
