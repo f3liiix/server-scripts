@@ -45,9 +45,14 @@ detect_system() {
     local version=""
     
     if [[ -f /etc/os-release ]]; then
-        . /etc/os-release
-        distro="$ID"
-        version="$VERSION_ID"
+        # 使用grep和cut解析，避免source导致的变量冲突
+        distro=$(grep '^ID=' /etc/os-release | cut -d'=' -f2 | tr -d '"' || echo "unknown")
+        version=$(grep '^VERSION_ID=' /etc/os-release | cut -d'=' -f2 | tr -d '"' || echo "unknown")
+        
+        # 如果VERSION_ID不存在，尝试使用VERSION
+        if [[ "$version" == "unknown" ]]; then
+            version=$(grep '^VERSION=' /etc/os-release | cut -d'=' -f2 | tr -d '"' || echo "unknown")
+        fi
     elif [[ -f /etc/debian_version ]]; then
         distro="debian"
         version=$(cat /etc/debian_version)
