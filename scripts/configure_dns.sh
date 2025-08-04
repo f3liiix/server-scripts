@@ -240,7 +240,7 @@ input_custom_dns() {
         fi
         
         dns_servers+=("$dns_input")
-        log_success "已添加DNS服务器: $dns_input"
+        echo "已添加DNS服务器: $dns_input" >&2
         ((index++))
     done
     
@@ -665,10 +665,10 @@ configure_custom_dns() {
     local custom_dns
     
     if custom_dns=$(input_custom_dns); then
-        echo
-        echo "=== 配置自定义DNS服务器 ==="
-        echo "DNS服务器: $custom_dns"
-        echo
+        echo >&2
+        echo "=== 配置自定义DNS服务器 ===" >&2
+        echo "DNS服务器: $custom_dns" >&2
+        echo >&2
         
         if ! test_dns_servers "$custom_dns"; then
             log_error "DNS服务器测试失败，配置已取消"
@@ -679,7 +679,7 @@ configure_custom_dns() {
             backup_dns_config
             
             if apply_dns_config "$custom_dns" && verify_dns_config; then
-                echo
+                echo >&2
                 show_dns_result
                 log_success "自定义DNS配置完成！"
             else
