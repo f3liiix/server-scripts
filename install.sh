@@ -179,12 +179,13 @@ interactive_menu() {
             echo
         fi
         
+        echo
         echo -e "${CYAN}🎉 请选择要执行的优化项目：${NC}"
         echo
-        echo -e "  1) 更新系统及软件包      ${GRAY}# 推荐 - 系统安全更新${NC}"
-        echo -e "  2) 一键开启BBR          ${GRAY}# 推荐 - 高延迟网络优化${NC}"
-        echo -e "  3) TCP网络调优          ${GRAY}# 推荐 - 提升网络性能${NC}"
-        echo -e "  4) DNS服务器配置        ${GRAY}# 推荐 - 提升解析速度${NC}"
+        echo -e "  1) 更新系统及软件包      ${GRAY}# 推荐${NC}"
+        echo -e "  2) 一键开启BBR          ${GRAY}# 推荐${NC}"
+        echo -e "  3) TCP网络调优          ${GRAY}# 推荐${NC}"
+        echo -e "  4) DNS服务器配置        ${GRAY}# 推荐${NC}"
         echo -e "  5) SSH安全配置          ${GRAY}# 端口和密码设置${NC}"
         echo -e "  6) 禁用IPv6             ${GRAY}# 避免双栈网络问题${NC}"
         echo -e "  7) 全部优化             ${GRAY}# 运行所有优化项目${NC}"

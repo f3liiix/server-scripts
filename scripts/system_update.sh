@@ -235,10 +235,6 @@ main() {
     log_info "检测到包管理器: $pkg_manager"
     echo
     
-    # 显示系统信息
-    show_system_info
-    echo
-    
     # 确认操作
     if ! confirm_action "确定要更新系统和软件包吗？" "Y"; then
         log_info "用户取消了系统更新操作"
