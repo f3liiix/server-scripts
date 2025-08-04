@@ -4,9 +4,9 @@
 # Script Name: disable_ipv6.sh
 # Description: This script disables IPv6 on Debian/Ubuntu systems by updating
 #              sysctl settings. Enhanced with better compatibility and error handling.
-# Author:      Optimized version
-# Date:        2025-01-08
-# Version:     2.0
+# Author:      f3liiix
+# Date:        2025-08-05
+# Version:     1.0.0
 # ==============================================================================
 
 set -euo pipefail  # 严格模式：遇到错误立即退出
@@ -29,19 +29,19 @@ readonly IPV6_DISABLE_CONFIG=(
 
 # --- 工具函数 ---
 log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
+    echo -e "${BLUE}[信息]${NC} $1"
 }
 
 log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
+    echo -e "${GREEN}[成功]${NC} $1"
 }
 
 log_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
+    echo -e "${YELLOW}[注意]${NC} $1"
 }
 
 log_error() {
-    echo -e "${RED}[ERROR]${NC} $1" >&2
+    echo -e "${RED}[错误]${NC} $1" >&2
 }
 
 # 检测发行版
@@ -186,6 +186,7 @@ verify_ipv6_disabled() {
             sysctl net.ipv6.conf.lo.disable_ipv6 2>/dev/null || true
         fi
         echo "====================="
+        echo
         
         return 0
     else
@@ -200,9 +201,9 @@ show_recommendations() {
     echo "=== 📋 后续建议 ==="
     echo "1. 重启系统以确保所有服务都使用新配置"
     echo "2. 检查应用程序配置，确保不依赖IPv6"
-    echo "3. 验证网络服务正常工作: ping google.com"
-    echo "4. 如需恢复IPv6，可使用备份文件进行还原"
-    echo "================="
+    echo "3. 如需恢复IPv6，可使用备份文件进行还原"
+    echo "==================="
+    echo
 }
 
 # 清理和回滚函数
@@ -219,8 +220,6 @@ rollback_changes() {
 
 # --- 主程序 ---
 main() {
-    echo "=== IPv6 禁用脚本 v2.0 ==="
-    echo
     # 1. 检查root权限
     if [[ $(id -u) -ne 0 ]]; then
         log_error "此脚本需要以 root 权限运行"
@@ -248,6 +247,7 @@ main() {
     if verify_ipv6_disabled; then
         show_recommendations
         log_success "IPv6 禁用操作完成！"
+        echo
         return 0
     else
         log_error "IPv6 禁用失败，请检查系统日志"

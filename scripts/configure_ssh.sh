@@ -313,7 +313,7 @@ select_user() {
     if [[ "$current_user" == "root" ]]; then
         echo "1) root (系统管理员)" >&2
         echo "2) 其他用户 (手动输入)" >&2
-        echo "==================" >&2
+        echo "====================" >&2
         
         local choice
         local username
@@ -379,7 +379,7 @@ select_user() {
         echo "1) root (系统管理员)" >&2
         echo "2) $current_user (当前用户)" >&2
         echo "3) 其他用户 (手动输入)" >&2
-        echo "==================" >&2
+        echo "====================" >&2
         
         local choice
         local username
