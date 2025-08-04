@@ -20,13 +20,15 @@ readonly GREEN='\033[0;32m'
 readonly YELLOW='\033[1;33m'
 readonly BLUE='\033[0;34m'
 readonly CYAN='\033[0;36m'
+readonly WHITE='\033[1;37m'
+readonly GRAY='\033[0;37m'
 readonly NC='\033[0m'
 
 # 日志函数
-log() { echo -e "${BLUE}[INFO]${NC} $1"; }
-success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
-warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
-error() { echo -e "${RED}[ERROR]${NC} $1" >&2; }
+log() { echo -e "${BLUE}[信息]${NC} $1"; }
+success() { echo -e "${GREEN}[成功]${NC} $1"; }
+warn() { echo -e "${YELLOW}[注意]${NC} $1"; }
+error() { echo -e "${RED}[错误]${NC} $1" >&2; }
 
 # 检查root权限
 check_root() {
@@ -37,24 +39,124 @@ check_root() {
     fi
 }
 
-# 快速系统检查
+# 获取系统信息
+get_system_info() {
+    local os_name=""
+    local os_version=""
+    local kernel_version=""
+    
+    # 获取内核版本
+    kernel_version=$(uname -r 2>/dev/null || echo "未知")
+    
+    # 优先使用 /etc/os-release (现代Linux标准)
+    if [[ -f /etc/os-release ]]; then
+        source /etc/os-release
+        os_name="$NAME"
+        os_version="$VERSION"
+    # 备用方案：使用 lsb_release
+    elif command -v lsb_release >/dev/null 2>&1; then
+        os_name=$(lsb_release -si 2>/dev/null)
+        os_version=$(lsb_release -sr 2>/dev/null)
+    # 特定系统检测
+    else
+        # Ubuntu/Debian
+        if [[ -f /etc/debian_version ]]; then
+            if grep -q "Ubuntu" /etc/issue 2>/dev/null; then
+                os_name="Ubuntu"
+                os_version=$(cat /etc/debian_version 2>/dev/null || echo "未知版本")
+            else
+                os_name="Debian"
+                os_version=$(cat /etc/debian_version 2>/dev/null || echo "未知版本")
+            fi
+        # RedHat/CentOS/Fedora
+        elif [[ -f /etc/redhat-release ]]; then
+            local redhat_info=$(cat /etc/redhat-release 2>/dev/null)
+            if echo "$redhat_info" | grep -q "CentOS"; then
+                os_name="CentOS"
+                os_version=$(echo "$redhat_info" | sed 's/.*release \([0-9.]*\).*/\1/')
+            elif echo "$redhat_info" | grep -q "Red Hat"; then
+                os_name="Red Hat Enterprise Linux"
+                os_version=$(echo "$redhat_info" | sed 's/.*release \([0-9.]*\).*/\1/')
+            elif echo "$redhat_info" | grep -q "Fedora"; then
+                os_name="Fedora"
+                os_version=$(echo "$redhat_info" | sed 's/.*release \([0-9.]*\).*/\1/')
+            else
+                os_name="RedHat系"
+                os_version=$(echo "$redhat_info" | sed 's/.*release \([0-9.]*\).*/\1/' 2>/dev/null || echo "未知版本")
+            fi
+        # Arch Linux
+        elif [[ -f /etc/arch-release ]]; then
+            os_name="Arch Linux"
+            os_version="滚动发布"
+        # openSUSE
+        elif [[ -f /etc/SuSE-release ]]; then
+            os_name="openSUSE"
+            os_version=$(grep "VERSION" /etc/SuSE-release 2>/dev/null | cut -d'=' -f2 | tr -d ' ' || echo "未知版本")
+        # Alpine Linux
+        elif [[ -f /etc/alpine-release ]]; then
+            os_name="Alpine Linux"
+            os_version=$(cat /etc/alpine-release 2>/dev/null || echo "未知版本")
+        else
+            os_name="未知Linux发行版"
+            os_version="未知版本"
+        fi
+    fi
+    
+    # 输出系统信息
+    echo "${os_name:-未知系统}|${os_version:-未知版本}|${kernel_version}"
+}
+
+# 详细系统检查
 check_system() {
-    log "检查系统环境..."
+    log "正在检查系统环境..."
+    
+    # 获取系统信息
+    local system_info=$(get_system_info)
+    local os_name=$(echo "$system_info" | cut -d'|' -f1)
+    local os_version=$(echo "$system_info" | cut -d'|' -f2)
+    local kernel_version=$(echo "$system_info" | cut -d'|' -f3)
+    
+    # 系统兼容性检查和信息显示
+    case "$os_name" in
+        *Ubuntu*|*Debian*)
+            success "检测到 ${os_name} 系统，版本 ${os_version}，内核版本：${kernel_version} ✅"
+            ;;
+        *CentOS*|*"Red Hat"*|*Fedora*|*RedHat*)
+            success "检测到 ${os_name} 系统，版本 ${os_version}，内核版本：${kernel_version} ✅"
+            ;;
+        *Arch*)
+            success "检测到 ${os_name} 系统，版本 ${os_version}，内核版本：${kernel_version} ✅"
+            ;;
+        *openSUSE*|*SUSE*)
+            success "检测到 ${os_name} 系统，版本 ${os_version}，内核版本：${kernel_version} ✅"
+            ;;
+        *Alpine*)
+            warn "检测到 ${os_name} 系统，版本 ${os_version}，内核版本：${kernel_version} - 部分功能可能受限 ⚠️"
+            ;;
+        *)
+            warn "检测到 ${os_name} 系统，版本 ${os_version}，内核版本：${kernel_version} - 将尝试继续安装 ⚠️"
+            ;;
+    esac
     
     # 检查基本命令
-    for cmd in curl wget git; do
+    log "检查必要命令..."
+    local missing_commands=()
+    
+    for cmd in curl wget; do
         if ! command -v "$cmd" >/dev/null 2>&1; then
-            warn "建议安装 $cmd 以获得更好体验"
+            missing_commands+=("$cmd")
         fi
     done
     
-    # 检测系统类型
-    if [[ -f /etc/debian_version ]]; then
-        success "检测到 Debian/Ubuntu 系统"
-    elif [[ -f /etc/redhat-release ]]; then
-        success "检测到 RedHat/CentOS 系统"
+    if [[ ${#missing_commands[@]} -eq 0 ]]; then
+        success "必要命令检查通过 ✅"
     else
-        warn "未知系统类型，继续安装..."
+        warn "缺少命令: ${missing_commands[*]} - 建议安装以获得更好体验 ⚠️"
+    fi
+    
+    # 可选命令检查
+    if ! command -v git >/dev/null 2>&1; then
+        warn "建议安装 git 以获得更好体验 💡"
     fi
 }
 
@@ -107,7 +209,6 @@ verify_installation() {
 show_menu_info() {
     echo
     echo -e "${GREEN}🎉 服务器优化工具已就绪！${NC}"
-    echo -e "${CYAN}💡 提示：选择对应数字即可运行优化项目${NC}"
     echo
 }
 
@@ -115,20 +216,14 @@ show_menu_info() {
 initialize_system() {
     log "正在初始化脚本..."
     
-    # 开始进度显示
-    printf "${BLUE}[INFO]${NC} 初始化进度: "
-    
     # 执行下载
     install_tools
-    printf "▓▓"
     
     # 验证安装
     if verify_installation; then
-        printf "▓ ✅\n"
-        success "初始化完成"
+        success "初始化完成 ✅"
     else
-        printf "▓ ❌\n"
-        error "初始化失败"
+        error "初始化失败 ❌"
         exit 1
     fi
 }
@@ -152,13 +247,13 @@ interactive_menu() {
         echo
         echo -e "${CYAN}请选择要执行的优化项目：${NC}"
         echo
-        echo "  1) TCP网络调优          # 推荐 - 提升网络性能"
-        echo "  2) DNS服务器配置        # 推荐 - 提升解析速度"
-        echo "  3) 一键开启BBR          # 高延迟网络优化"
-        echo "  4) SSH安全配置          # 端口和密码设置"
-        echo "  5) 禁用IPv6             # 避免双栈网络问题"
-        echo "  6) 全部优化             # 运行所有优化项目"
-        echo "  0) 退出程序"
+        echo -e "  ${WHITE}1) TCP网络调优          ${GRAY}# 推荐 - 提升网络性能${NC}"
+        echo -e "  ${WHITE}2) DNS服务器配置        ${GRAY}# 推荐 - 提升解析速度${NC}"
+        echo -e "  ${WHITE}3) 一键开启BBR          ${GRAY}# 高延迟网络优化${NC}"
+        echo -e "  ${WHITE}4) SSH安全配置          ${GRAY}# 端口和密码设置${NC}"
+        echo -e "  ${WHITE}5) 禁用IPv6             ${GRAY}# 避免双栈网络问题${NC}"
+        echo -e "  ${WHITE}6) 全部优化             ${GRAY}# 运行所有优化项目${NC}"
+        echo -e "  ${WHITE}0) 退出程序${NC}"
         echo
         
         read -p "$(echo -e "${YELLOW}请输入选择 (0-6): ${NC}")" choice
@@ -215,9 +310,10 @@ interactive_menu() {
 
 # 主程序
 main() {
-    echo -e "${BLUE}╔══════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║          服务器优化工具集合 - v$VERSION                 ║${NC}"
-    echo -e "${BLUE}╚══════════════════════════════════════════════════════╝${NC}"
+    echo -e "${GREEN}╔════════════════════════════════════════════════════╗${NC}"
+    echo -e "${GREEN}║          服务器优化工具集合 - v$VERSION               ║${NC}"
+    echo -e "${GREEN}║          bash <(curl -sL ss.hide.ss)               ║${NC}"
+    echo -e "${GREEN}╚════════════════════════════════════════════════════╝${NC}"
     echo
     
     check_root

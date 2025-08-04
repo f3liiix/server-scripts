@@ -16,26 +16,51 @@ exit 0
     <title>服务器优化工具集合 - 一键安装</title>
     <meta name="description" content="Linux服务器性能优化工具集合，一键安装TCP优化、BBR加速、DNS配置、SSH安全等功能">
     
-    <!-- CSS隐藏bash脚本 - 完美解决方案 -->
-    <style>
-        /* 隐藏HTML标签外的所有文本内容（bash脚本） */
-        html {
-            font-size: 0 !important;
-            line-height: 0 !important;
-        }
-        
-        /* 恢复HTML元素内的正常显示 */
-        html * {
-            font-size: initial !important;
-            line-height: initial !important;
-        }
-        
-        /* 确保body有正确的基础样式 */
-        body {
-            font-size: 16px !important;
-            line-height: 1.6 !important;
-        }
+    <!-- 临时隐藏页面，防止显示bash脚本 -->
+    <style id="temp-hide">
+        body { opacity: 0 !important; }
     </style>
+    
+    <!-- JavaScript清理脚本 - 彻底移除bash内容 -->
+    <script>
+        (function() {
+            // 立即执行的清理函数
+            function cleanBashContent() {
+                // 获取整个文档的文本内容
+                var docText = document.documentElement.outerHTML;
+                
+                // 找到HTML部分的开始和结束
+                var htmlStart = docText.indexOf('<!DOCTYPE html>');
+                var htmlEnd = docText.lastIndexOf('</html>') + 7;
+                
+                if (htmlStart !== -1 && htmlEnd !== -1) {
+                    // 提取纯HTML内容
+                    var cleanHTML = docText.substring(htmlStart, htmlEnd);
+                    
+                    // 重写整个文档
+                    document.open();
+                    document.write(cleanHTML);
+                    document.close();
+                    
+                    // 确保样式正确应用
+                    setTimeout(function() {
+                        var tempStyle = document.getElementById('temp-hide');
+                        if (tempStyle) {
+                            tempStyle.remove();
+                        }
+                        document.body.style.opacity = '1';
+                    }, 100);
+                }
+            }
+            
+            // 尽早执行清理
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', cleanBashContent);
+            } else {
+                cleanBashContent();
+            }
+        })();
+    </script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
