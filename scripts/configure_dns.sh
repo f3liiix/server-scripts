@@ -52,7 +52,7 @@ get_dns_description() {
 }
 
 # DNS测试超时时间
-readonly DNS_TEST_TIMEOUT=5
+readonly DNS_TEST_TIMEOUT=10
 
 # --- DNS配置函数 ---
 
@@ -138,27 +138,38 @@ validate_ipv4() {
 # 测试DNS服务器可达性
 test_dns_server() {
     local dns_server="$1"
-    local test_domain="${2:-google.com}"
+    local test_domains=("baidu.com" "qq.com" "taobao.com" "google.com")
     
     log_info "测试DNS服务器 $dns_server..."
     
-    # 使用nslookup测试
-    if command_exists nslookup; then
-        if timeout "$DNS_TEST_TIMEOUT" nslookup "$test_domain" "$dns_server" >/dev/null 2>&1; then
-            return 0
+    # 尝试多个测试域名
+    for test_domain in "${test_domains[@]}"; do
+        # 使用nslookup测试
+        if command_exists nslookup; then
+            if timeout "$DNS_TEST_TIMEOUT" nslookup "$test_domain" "$dns_server" >/dev/null 2>&1; then
+                return 0
+            fi
         fi
-    fi
-    
-    # 使用dig测试
-    if command_exists dig; then
-        if timeout "$DNS_TEST_TIMEOUT" dig @"$dns_server" "$test_domain" +short >/dev/null 2>&1; then
-            return 0
+        
+        # 使用dig测试
+        if command_exists dig; then
+            if timeout "$DNS_TEST_TIMEOUT" dig @"$dns_server" "$test_domain" +short >/dev/null 2>&1; then
+                return 0
+            fi
         fi
-    fi
+        
+        # 使用host测试
+        if command_exists host; then
+            if timeout "$DNS_TEST_TIMEOUT" host "$test_domain" "$dns_server" >/dev/null 2>&1; then
+                return 0
+            fi
+        fi
+    done
     
-    # 使用host测试
-    if command_exists host; then
-        if timeout "$DNS_TEST_TIMEOUT" host "$test_domain" "$dns_server" >/dev/null 2>&1; then
+    # 如果所有DNS工具都不可用，尝试ping测试（不太准确但可用）
+    if ! command_exists nslookup && ! command_exists dig && ! command_exists host; then
+        log_warning "未找到DNS测试工具，尝试ping测试（可能不准确）"
+        if timeout "$DNS_TEST_TIMEOUT" ping -c 1 "$dns_server" >/dev/null 2>&1; then
             return 0
         fi
     fi
@@ -792,7 +803,7 @@ main() {
         show_main_menu
         
         local choice
-        read -p "请输入选择 (0-6): " choice
+        read -p "$(echo -e "${YELLOW}请输入选择 (0-6): ${NC}")" choice
         
         case "$choice" in
             1)
