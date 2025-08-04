@@ -129,22 +129,22 @@ check_system() {
     # 系统兼容性检查和信息显示
     case "$os_name" in
         *Ubuntu*|*Debian*)
-            success "检测到 ${os_name} 系统，版本 ${os_version}，内核版本：${kernel_version} ✅"
+            success "检测到 ${os_name} ${os_version}，内核：${kernel_version} ✅"
             ;;
         *CentOS*|*"Red Hat"*|*Fedora*|*RedHat*)
-            success "检测到 ${os_name} 系统，版本 ${os_version}，内核版本：${kernel_version} ✅"
+            success "检测到 ${os_name} ${os_version}，内核：${kernel_version} ✅"
             ;;
         *Arch*)
-            success "检测到 ${os_name} 系统，版本 ${os_version}，内核版本：${kernel_version} ✅"
+            success "检测到 ${os_name} ${os_version}，内核：${kernel_version} ✅"
             ;;
         *openSUSE*|*SUSE*)
-            success "检测到 ${os_name} 系统，版本 ${os_version}，内核版本：${kernel_version} ✅"
+            success "检测到 ${os_name} ${os_version}，内核：${kernel_version} ✅"
             ;;
         *Alpine*)
-            warn "检测到 ${os_name} 系统，版本 ${os_version}，内核版本：${kernel_version} - 部分功能可能受限 ⚠️"
+            warn "检测到 ${os_name} ${os_version}，内核：${kernel_version} - 部分功能可能受限 ⚠️"
             ;;
         *)
-            warn "检测到 ${os_name} 系统，版本 ${os_version}，内核版本：${kernel_version} - 将尝试继续安装 ⚠️"
+            warn "检测到 ${os_name} ${os_version}，内核：${kernel_version} - 将尝试继续安装 ⚠️"
             ;;
     esac
     
@@ -224,9 +224,9 @@ initialize_system() {
     
     # 验证安装
     if verify_installation; then
-        success "初始化完成 ✅"
+        success "脚本初始化完成 ✅"
     else
-        error "初始化失败 ❌"
+        error "脚本初始化失败 ❌"
         exit 1
     fi
 }
@@ -249,13 +249,13 @@ interactive_menu() {
     while true; do
         echo -e "${CYAN}请选择要执行的优化项目：${NC}"
         echo
-        echo -e "  ${WHITE}1) TCP网络调优          ${GRAY}# 推荐 - 提升网络性能${NC}"
-        echo -e "  ${WHITE}2) DNS服务器配置        ${GRAY}# 推荐 - 提升解析速度${NC}"
-        echo -e "  ${WHITE}3) 一键开启BBR          ${GRAY}# 高延迟网络优化${NC}"
-        echo -e "  ${WHITE}4) SSH安全配置          ${GRAY}# 端口和密码设置${NC}"
-        echo -e "  ${WHITE}5) 禁用IPv6             ${GRAY}# 避免双栈网络问题${NC}"
-        echo -e "  ${WHITE}6) 全部优化             ${GRAY}# 运行所有优化项目${NC}"
-        echo -e "  ${WHITE}0) 退出程序${NC}"
+        echo -e "  1) TCP网络调优          ${GRAY}# 推荐 - 提升网络性能${NC}"
+        echo -e "  2) DNS服务器配置        ${GRAY}# 推荐 - 提升解析速度${NC}"
+        echo -e "  3) 一键开启BBR          ${GRAY}# 高延迟网络优化${NC}"
+        echo -e "  4) SSH安全配置          ${GRAY}# 端口和密码设置${NC}"
+        echo -e "  5) 禁用IPv6             ${GRAY}# 避免双栈网络问题${NC}"
+        echo -e "  6) 全部优化             ${GRAY}# 运行所有优化项目${NC}"
+        echo -e "  0) 退出程序"
         echo
         
         read -p "$(echo -e "${YELLOW}请输入选择 (0-6): ${NC}")" choice
