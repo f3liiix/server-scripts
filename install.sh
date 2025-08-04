@@ -149,7 +149,7 @@ initialize_system() {
         error "脚本初始化失败 ❌"
         exit 1
     fi
-    
+
     echo
 }
 
@@ -169,11 +169,11 @@ run_optimization() {
 # 交互式菜单
 interactive_menu() {
     local show_header="${1:-true}"  # 默认显示标题框
+    echo
     
     while true; do
         # 根据参数决定是否显示标题框
         if [[ "$show_header" == "true" ]]; then
-            echo
             echo -e "${GREEN}╔═════════════════════════════════════════════════╗${NC}"
             echo -e "${GREEN}║          服务器优化工具集合 - v$VERSION            ║${NC}"
             echo -e "${GREEN}║          bash <(curl -sL ss.hide.ss)            ║${NC}"
@@ -184,7 +184,7 @@ interactive_menu() {
         echo -e "${CYAN}🎉 请选择要执行的优化项目：${NC}"
         echo
         echo -e "  1) 更新系统/软件包       ${GRAY}# 推荐${NC}"
-        echo -e "  2) 开启BBR           ${GRAY}# 推荐${NC}"
+        echo -e "  2) 开启BBR             ${GRAY}# 推荐${NC}"
         echo -e "  3) TCP网络调优          ${GRAY}# 推荐${NC}"
         echo -e "  4) DNS服务器配置        ${GRAY}# 推荐${NC}"
         echo -e "  5) SSH安全配置          ${GRAY}# SSH端口和密码修改${NC}"
