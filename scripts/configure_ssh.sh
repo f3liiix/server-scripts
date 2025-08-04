@@ -3,9 +3,9 @@
 # ==============================================================================
 # Script Name: configure_ssh.sh
 # Description: SSH security configuration script for changing port and passwords
-# Author:      Optimized version
-# Date:        2025-01-08
-# Version:     1.0
+# Author:      f3liiix
+# Date:        2025-08-05
+# Version:     1.0.0
 # ==============================================================================
 
 set -euo pipefail  # 严格模式：遇到错误立即退出
@@ -23,7 +23,7 @@ else
 fi
 
 # --- 配置项 ---
-readonly SCRIPT_VERSION="1.0"
+readonly SCRIPT_VERSION="1.0.0"
 readonly SSHD_CONFIG="/etc/ssh/sshd_config"
 readonly BACKUP_DIR="/etc/backup_ssh_$(date +%Y%m%d_%H%M%S)"
 readonly DEFAULT_SSH_PORT="22"
@@ -253,19 +253,31 @@ input_user_password() {
     
     local password
     local confirm_password
+    local max_attempts=5
+    local attempts=0
     
-    while true; do
+    while [[ $attempts -lt $max_attempts ]]; do
+        ((attempts++))
+        
         # 安全输入密码
         read -s -p "请输入新密码: " password
         echo
         
         if [[ -z "$password" ]]; then
-            log_warning "密码不能为空"
+            log_warning "密码不能为空 (尝试 $attempts/$max_attempts)"
+            if [[ $attempts -eq $max_attempts ]]; then
+                log_error "输入次数过多，退出密码设置"
+                return 1
+            fi
             continue
         fi
         
         # 验证密码强度
         if ! validate_password_strength "$password"; then
+            if [[ $attempts -eq $max_attempts ]]; then
+                log_error "密码设置次数过多，退出"
+                return 1
+            fi
             continue
         fi
         
@@ -274,12 +286,22 @@ input_user_password() {
         echo
         
         if [[ "$password" != "$confirm_password" ]]; then
-            log_error "两次输入的密码不一致，请重新输入"
+            log_error "两次输入的密码不一致，请重新输入 (尝试 $attempts/$max_attempts)"
+            if [[ $attempts -eq $max_attempts ]]; then
+                log_error "确认密码次数过多，退出密码设置"
+                return 1
+            fi
             continue
         fi
         
+        log_info "密码设置成功"
         break
     done
+    
+    if [[ -z "$password" ]]; then
+        log_error "未能设置有效密码"
+        return 1
+    fi
     
     echo "$password"
 }
@@ -322,36 +344,52 @@ select_user() {
     
     local choice
     local username
+    local max_attempts=5
+    local attempts=0
     
-    while true; do
+    while [[ $attempts -lt $max_attempts ]]; do
+        ((attempts++))
         read -p "请选择要修改密码的用户 (1-3): " choice
         
         case "$choice" in
             1)
                 username="root"
+                log_info "已选择用户: $username"
                 break
                 ;;
             2)
                 username="$(whoami)"
+                log_info "已选择用户: $username"
                 break
                 ;;
             3)
                 read -p "请输入用户名: " username
                 if [[ -z "$username" ]]; then
-                    log_warning "用户名不能为空"
+                    log_warning "用户名不能为空，请重新选择"
                     continue
                 fi
                 if ! id "$username" >/dev/null 2>&1; then
-                    log_error "用户 $username 不存在"
+                    log_error "用户 $username 不存在，请重新选择"
                     continue
                 fi
+                log_info "已选择用户: $username"
                 break
                 ;;
             *)
-                log_warning "请输入 1、2 或 3"
+                log_warning "请输入 1、2 或 3 (尝试 $attempts/$max_attempts)"
+                if [[ $attempts -eq $max_attempts ]]; then
+                    log_error "选择次数过多，退出用户选择"
+                    return 1
+                fi
+                continue
                 ;;
         esac
     done
+    
+    if [[ -z "$username" ]]; then
+        log_error "未能选择有效用户"
+        return 1
+    fi
     
     echo "$username"
 }
@@ -499,13 +537,13 @@ show_firewall_suggestions() {
 # 主菜单
 show_main_menu() {
     echo
-    echo "=== SSH安全配置工具 v$SCRIPT_VERSION ==="
+    echo "=== SSH安全配置菜单 ==="
     echo "1) 修改SSH端口"
     echo "2) 修改用户密码"
     echo "3) 同时修改端口和密码"
     echo "4) 查看当前SSH配置"
-    echo "5) 退出"
-    echo "================================="
+    echo "0) 退出SSH配置工具"
+    echo "======================="
 }
 
 # 显示当前配置
@@ -517,15 +555,19 @@ show_current_config() {
     echo "=== 当前SSH配置 ==="
     echo "SSH端口: $current_port"
     echo "配置文件: $SSHD_CONFIG"
-    echo "服务状态: $(is_service_running ssh || is_service_running sshd && echo "运行中" || echo "未运行")"
-    echo "=================="
+    
+    # 检查服务状态并显示颜色
+    if is_service_running ssh || is_service_running sshd; then
+        echo -e "服务状态: ${GREEN}运行中${NC}"
+    else
+        echo -e "服务状态: ${RED}未运行${NC}"
+    fi
+    
+    echo "==================="
 }
 
 # 主程序
 main() {
-    echo "=== SSH安全配置脚本 v$SCRIPT_VERSION ==="
-    echo
-    
     # 1. 优先处理--help参数（无需root权限）
     if [[ $# -gt 0 ]] && [[ "$1" == "--help" ]]; then
         echo "用法: $0 [选项]"
@@ -562,14 +604,17 @@ main() {
         show_main_menu
         
         local choice
-        read -p "请选择操作 (1-5): " choice
+        read -p "$(echo -e "${YELLOW}请输入选择 (0-4): ${NC}")" choice
         
         case "$choice" in
             1)
                 echo
                 log_info "=== 修改SSH端口 ==="
                 local new_port
-                new_port=$(input_ssh_port)
+                if ! new_port=$(input_ssh_port); then
+                    log_error "端口输入失败"
+                    continue
+                fi
                 
                 if ! change_ssh_port "$new_port"; then
                     log_error "SSH端口修改失败"
@@ -585,9 +630,15 @@ main() {
                 echo
                 log_info "=== 修改用户密码 ==="
                 local username
-                username=$(select_user)
+                if ! username=$(select_user); then
+                    log_error "用户选择失败"
+                    continue
+                fi
                 local password
-                password=$(input_user_password "$username")
+                if ! password=$(input_user_password "$username"); then
+                    log_error "密码输入失败"
+                    continue
+                fi
                 if ! change_user_password "$username" "$password"; then
                     log_error "用户密码修改失败"
                 fi
@@ -598,13 +649,22 @@ main() {
                 
                 # 修改端口
                 local new_port
-                new_port=$(input_ssh_port)
+                if ! new_port=$(input_ssh_port); then
+                    log_error "端口输入失败"
+                    continue
+                fi
                 
                 # 修改密码
                 local username
-                username=$(select_user)
+                if ! username=$(select_user); then
+                    log_error "用户选择失败"
+                    continue
+                fi
                 local password
-                password=$(input_user_password "$username")
+                if ! password=$(input_user_password "$username"); then
+                    log_error "密码输入失败"
+                    continue
+                fi
                 
                 # 执行修改
                 local success=true
@@ -631,12 +691,12 @@ main() {
             4)
                 show_current_config
                 ;;
-            5)
+            0)
                 log_info "退出SSH配置工具"
                 exit 0
                 ;;
             *)
-                log_warning "请输入 1-5 之间的数字"
+                log_warning "请输入 0-4 之间的数字"
                 ;;
         esac
         
