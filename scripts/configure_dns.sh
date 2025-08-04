@@ -787,7 +787,7 @@ main() {
                 ;;
             0)
                 log_info "退出DNS配置工具"
-                return 0
+                exit 0
                 ;;
             *)
                 log_warning "请输入0-6之间的数字"
