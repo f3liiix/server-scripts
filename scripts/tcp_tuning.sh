@@ -47,8 +47,60 @@ log_step() {
     echo -e "${CYAN}[步骤]${NC} $1"
 }
 
-# 注: detect_system, check_kernel_version, version_compare 等函数
-# 现在统一使用 common_functions.sh 中的实现
+# 系统检测函数
+detect_system() {
+    local distro=""
+    local version=""
+    
+    if [[ -f /etc/os-release ]]; then
+        # 使用grep和cut解析，避免source导致的变量冲突
+        distro=$(grep '^ID=' /etc/os-release | cut -d'=' -f2 | tr -d '"' || echo "unknown")
+        version=$(grep '^VERSION_ID=' /etc/os-release | cut -d'=' -f2 | tr -d '"' || echo "unknown")
+        
+        # 如果VERSION_ID不存在，尝试使用VERSION
+        if [[ "$version" == "unknown" ]]; then
+            version=$(grep '^VERSION=' /etc/os-release | cut -d'=' -f2 | tr -d '"' || echo "unknown")
+        fi
+    elif [[ -f /etc/debian_version ]]; then
+        distro="debian"
+        version=$(cat /etc/debian_version)
+    elif [[ -f /etc/redhat-release ]]; then
+        distro="rhel"
+        version=$(grep -o '[0-9]\+\.[0-9]\+' /etc/redhat-release | head -1)
+    else
+        distro="unknown"
+        version="unknown"
+    fi
+    
+    echo "$distro:$version"
+}
+
+# 版本比较函数 (返回0表示version1 >= version2)
+version_compare() {
+    local version1="$1"
+    local version2="$2"
+    
+    if [[ "$(printf '%s\n' "$version1" "$version2" | sort -V | head -n1)" == "$version2" ]]; then
+        return 0  # version1 >= version2
+    else
+        return 1  # version1 < version2
+    fi
+}
+
+# 检查内核版本
+check_kernel_version() {
+    local min_version="$1"
+    local current_version
+    current_version=$(uname -r | cut -d. -f1,2)
+    
+    if version_compare "$current_version" "$min_version"; then
+        log_success "内核版本 $current_version 满足要求 (>= $min_version)"
+        return 0
+    else
+        log_warning "内核版本 $current_version 不满足要求 (需要 >= $min_version)"
+        return 1
+    fi
+}
 
 # 检查系统兼容性
 check_system_compatibility() {
