@@ -463,14 +463,7 @@ show_recommendations() {
     echo "=== 📋 优化后建议 ==="
     echo "1. 重启系统以确保所有优化完全生效"
     echo "2. 监控系统性能和网络连接状态"
-    echo "3. 根据实际负载调整参数（可编辑 $SYSCTL_CONF）"
-    echo "4. 在代理软件中启用TCP Fast Open支持"
-    echo "5. 使用以下命令测试TCP Fast Open:"
-    echo "   curl --tcp-fastopen http://example.com"
-    echo "6. 实时监控网络状态:"
-    echo "   watch -n 1 'ss -tulnp | head -20'"
-    echo "   netstat -s | grep -i overflow"
-    echo "7. 如需回滚，使用备份文件: $BACKUP_DIR"
+    echo "3. 如需回滚，使用备份文件: $BACKUP_DIR"
     echo "===================="
 }
 

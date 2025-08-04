@@ -22,47 +22,54 @@ exit $INSTALL_EXIT_CODE
     <meta name="description" content="Linux服务器性能优化工具集合，一键安装TCP优化、BBR加速、DNS配置、SSH安全等功能">
     
     <!-- 混合文件清理脚本 - 移除bash内容 -->
-    <style>
+    <style id="temp-hide">
         /* 临时隐藏页面，防止显示bash脚本 */
-        body { opacity: 0 !important; }
+        body { visibility: hidden; }
     </style>
     
     <script>
         // 立即执行的清理脚本
         (function() {
-            // 等待DOM加载
             function cleanPage() {
-                // 移除body前的所有文本节点（bash脚本内容）
-                var walker = document.createTreeWalker(
-                    document.documentElement,
-                    NodeFilter.SHOW_TEXT,
-                    null,
-                    false
-                );
-                
-                var textNodes = [];
-                var node;
-                while (node = walker.nextNode()) {
-                    textNodes.push(node);
+                try {
+                    // 移除包含bash脚本的文本节点
+                    var walker = document.createTreeWalker(
+                        document.documentElement,
+                        NodeFilter.SHOW_TEXT,
+                        null,
+                        false
+                    );
+                    
+                    var textNodes = [];
+                    var node;
+                    while (node = walker.nextNode()) {
+                        textNodes.push(node);
+                    }
+                    
+                    // 移除包含bash脚本的文本节点
+                    textNodes.forEach(function(textNode) {
+                        var content = textNode.textContent || '';
+                        if (content.includes('#!/bin/bash') || 
+                            content.includes('TEMP_SCRIPT') || 
+                            content.includes('curl -fsSL') ||
+                            content.includes('mktemp') ||
+                            content.includes('exit $') ||
+                            content.includes('HTMLCONTENT')) {
+                            if (textNode.parentNode) {
+                                textNode.parentNode.removeChild(textNode);
+                            }
+                        }
+                    });
+                } catch (e) {
+                    console.log('清理脚本执行时出现错误，但页面将正常显示');
                 }
                 
-                // 移除包含bash脚本的文本节点
-                textNodes.forEach(function(textNode) {
-                    var content = textNode.textContent || '';
-                    if (content.includes('#!/bin/bash') || 
-                        content.includes('TEMP_SCRIPT') || 
-                        content.includes('curl -fsSL') ||
-                        content.includes('mktemp') ||
-                        content.includes('exit $INSTALL_EXIT_CODE') ||
-                        content.includes('HTMLCONTENT')) {
-                        if (textNode.parentNode) {
-                            textNode.parentNode.removeChild(textNode);
-                        }
-                    }
-                });
-                
-                // 显示清理后的页面
-                document.body.style.opacity = '1';
+                // 移除临时隐藏样式，显示页面
+                var tempStyle = document.getElementById('temp-hide');
+                if (tempStyle) {
+                    tempStyle.remove();
+                }
+                document.body.style.visibility = 'visible';
             }
             
             // 立即执行或等待DOM加载

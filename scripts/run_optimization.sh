@@ -157,7 +157,7 @@ run_script() {
     
     # 用户确认（除非强制模式）
     if [[ "${FORCE_MODE:-false}" != "true" ]]; then
-        if ! confirm_action "确定要运行 $script_key 优化脚本吗？" "N"; then
+        if ! confirm_action "确定要运行 $script_key 优化脚本吗？" "Y"; then
             log_info "用户取消了脚本执行"
             return 0
         fi
@@ -269,7 +269,7 @@ pre_flight_check() {
     if ! is_debian_based; then
         log_warning "检测到非Debian系统，某些脚本可能不完全兼容"
         if [[ "${FORCE_MODE:-false}" != "true" ]]; then
-            if ! confirm_action "是否继续？" "N"; then
+            if ! confirm_action "是否继续？" "Y"; then
                 exit 0
             fi
         fi
@@ -359,8 +359,6 @@ main() {
         list_scripts
         exit 1
     fi
-    
-    log_success "优化脚本执行完成！"
 }
 
 # 执行主程序
