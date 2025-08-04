@@ -165,7 +165,6 @@ cleanup_system() {
 show_update_summary() {
     local pkg_manager="$1"
     
-    echo
     echo "=== 系统更新完成总结 ==="
     log_success "✅ 软件包列表已更新"
     log_success "✅ 系统软件包已升级"
@@ -211,10 +210,10 @@ check_reboot_required() {
 
 # 主程序
 main() {
-    echo -e "${GREEN}╔══════════════════════════════════════════════════╗${NC}"
+    echo -e "${GREEN}╔═══════════════════════════════════════════════╗${NC}"
     echo -e "${GREEN}║                 系统更新工具                    ║${NC}"
-    echo -e "${GREEN}║            System Update Tool v$SCRIPT_VERSION            ║${NC}"
-    echo -e "${GREEN}╚══════════════════════════════════════════════════╝${NC}"
+    echo -e "${GREEN}║            System Update Tool                 ║${NC}"
+    echo -e "${GREEN}╚═══════════════════════════════════════════════╝${NC}"
     echo
     
     # 检查root权限
@@ -240,9 +239,8 @@ main() {
         log_info "用户取消了系统更新操作"
         exit 0
     fi
-    
-    echo
-    log_info "开始系统更新，这可能需要几分钟时间..."
+
+    log_info "开始系统更新，这可能需要一会时间..."
     echo
     
     # 执行更新步骤
