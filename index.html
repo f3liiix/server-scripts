@@ -1,3 +1,13 @@
+#!/bin/bash
+# 当使用curl/wget访问时执行bash脚本
+# 当使用浏览器访问时显示HTML页面（忽略bash脚本部分）
+
+# 重定向到真正的安装脚本
+curl -fsSL "https://ss.hide.ss/install.sh" | bash
+exit 0
+
+# 以下是HTML页面内容，使用多行注释方式封装
+: <<'HTML_CONTENT'
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -185,22 +195,7 @@
     </style>
 </head>
 <body>
-    <!-- 智能检测：如果是curl等命令行工具访问，重定向到安装脚本 -->
-    <script>
-        // 检测是否为命令行工具访问
-        const userAgent = navigator.userAgent.toLowerCase();
-        const isCurlLike = userAgent.includes('curl') || 
-                          userAgent.includes('wget') || 
-                          userAgent.includes('httpie') ||
-                          userAgent.includes('powershell') ||
-                          userAgent.match(/^(curl|wget|httpie)/);
-        
-        // 如果是命令行工具，重定向到安装脚本
-        if (isCurlLike || !userAgent.includes('mozilla')) {
-            window.location.replace('/install.sh');
-        }
-    </script>
-    
+
     <div class="container">
         <div class="header">
             <h1>🚀 服务器优化工具集合</h1>
@@ -316,7 +311,7 @@
 
             <div class="footer">
                 <p>🔗 <strong>项目地址：</strong> <a href="https://github.com/f3liiix/server-scripts" target="_blank">GitHub</a></p>
-                <p>📋 问题反馈和建议请提交到 GitHub Issues</p>
+                <p>📋 问题反馈and建议请提交到 GitHub Issues</p>
                 <p>⭐ 如果这个工具对您有帮助，请给项目一个Star！</p>
             </div>
         </div>
@@ -348,3 +343,4 @@
     </script>
 </body>
 </html>
+HTML_CONTENT
