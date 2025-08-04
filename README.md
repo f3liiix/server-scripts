@@ -75,59 +75,42 @@ sudo ./scripts/run_optimization.sh dns
 sudo ./scripts/run_optimization.sh all
 ```
 
-#### 预览模式（不执行实际操作）
-```bash
-sudo ./scripts/run_optimization.sh --dry-run tcp
-sudo ./scripts/run_optimization.sh --dry-run bbr
-sudo ./scripts/run_optimization.sh --dry-run ssh
-sudo ./scripts/run_optimization.sh --dry-run dns
-```
+
 
 ## 📖 详细使用说明
 
 ### 主控制脚本 (`run_optimization.sh`)
 
-这是项目的核心脚本，提供统一的管理界面。
+这是项目的核心脚本，负责调度和执行各个优化脚本。主要通过菜单方式调用。
 
 #### 基本语法
 ```bash
-sudo ./scripts/run_optimization.sh [选项] [脚本名]
+sudo ./scripts/run_optimization.sh [脚本名]
 ```
 
-#### 可用选项
-| 选项 | 说明 |
-|------|------|
-| `-h, --help` | 显示帮助信息 |
-| `-l, --list` | 列出所有可用脚本 |
-| `-v, --version` | 显示版本信息 |
-| `-d, --debug` | 启用调试模式 |
-| `--dry-run` | 预览模式（不执行实际操作） |
-| `--force` | 强制执行（跳过确认） |
-| `--log FILE` | 指定日志文件路径 |
+#### 支持的脚本
+| 脚本名 | 说明 |
+|--------|------|
+| `ipv6` | 禁用IPv6配置 |
+| `tcp` | TCP网络优化配置 |
+| `bbr` | 启用BBR拥塞控制算法 |
+| `ssh` | SSH安全配置（端口和密码） |
+| `dns` | DNS服务器配置 |
+| `all` | 运行所有优化脚本 |
 
 #### 使用示例
 ```bash
-# 列出所有可用脚本
-sudo ./scripts/run_optimization.sh --list
+# 运行TCP网络优化
+sudo ./scripts/run_optimization.sh tcp
 
-# 调试模式运行TCP优化
-sudo ./scripts/run_optimization.sh --debug tcp
+# 运行DNS服务器配置
+sudo ./scripts/run_optimization.sh dns
 
-# 强制执行BBR启用（跳过确认）
-sudo ./scripts/run_optimization.sh --force bbr
-
-# 强制执行SSH配置（跳过确认）
-sudo ./scripts/run_optimization.sh --force ssh
-
-# 强制执行DNS配置（跳过确认）
-sudo ./scripts/run_optimization.sh --force dns
-
-# 强制执行所有优化（跳过确认）
-sudo ./scripts/run_optimization.sh --force all
-
-# 记录日志到指定文件
-sudo ./scripts/run_optimization.sh --log /var/log/my_opt.log dns
+# 运行所有优化脚本
+sudo ./scripts/run_optimization.sh all
 ```
+
+> **注意**: 推荐使用菜单方式：`bash <(curl -sL ss.hide.ss)` 进行交互式选择。
 
 ### IPv6禁用脚本 (`disable_ipv6.sh`)
 
