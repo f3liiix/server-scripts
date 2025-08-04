@@ -55,16 +55,10 @@ server-scripts/
 │   └── test-domain.sh              # 域名测试脚本
 ├── 自动化部署/
 │   └── .github/workflows/deploy.yml # GitHub Actions配置
-├── 网站配置/
-│   └── public/
-│       ├── index.html              # 项目主页
-│       ├── _config.yml             # Jekyll配置
-│       └── .htaccess               # Apache配置
+│       # 注：public目录由CI/CD自动创建
 └── 详细文档/
-    ├── README.md                   # 主要文档
-    ├── CUSTOM_DOMAIN_SETUP.md      # 域名配置详细指南
-    ├── DOMAIN_DEPLOYMENT_SUMMARY.md # 部署方案总结
-    └── FINAL_SUMMARY.md            # 本文档
+    ├── README.md                   # 主要文档（功能介绍和使用说明）
+    └── FINAL_SUMMARY.md            # 项目总结（包含完整部署指南）
 ```
 
 ## 🎯 用户体验对比
