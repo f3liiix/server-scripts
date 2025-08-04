@@ -249,7 +249,8 @@ input_custom_dns() {
         return 1
     fi
     
-    echo "${dns_servers[*]}"
+    # 清理输出，确保没有多余字符
+    printf '%s' "${dns_servers[*]}"
     return 0
 }
 
@@ -257,12 +258,12 @@ input_custom_dns() {
 test_dns_servers() {
     local dns_list="$1"
     local dns_array
+    
+    # 清理输入，移除可能的特殊字符
+    dns_list=$(echo "$dns_list" | tr -d "'" | tr -d '"' | xargs)
     IFS=' ' read -ra dns_array <<< "$dns_list"
     
     log_step "测试DNS服务器可达性..."
-    log_info "调试信息: 接收到的dns_list='$dns_list'"
-    log_info "调试信息: 解析后的dns_array长度=${#dns_array[@]}"
-    log_info "调试信息: dns_array内容=${dns_array[*]}"
     
     local working_dns=()
     local failed_dns=()
@@ -318,6 +319,9 @@ backup_dns_config() {
 apply_dns_config() {
     local dns_list="$1"
     local dns_array
+    
+    # 清理输入，移除可能的特殊字符
+    dns_list=$(echo "$dns_list" | tr -d "'" | tr -d '"' | xargs)
     IFS=' ' read -ra dns_array <<< "$dns_list"
     
     log_step "应用DNS配置..."
@@ -628,8 +632,6 @@ configure_preset_dns() {
     echo
     echo "=== 配置 $description ==="
     echo "DNS服务器: $dns_servers"
-    echo "调试信息: dns_servers变量长度=${#dns_servers}"
-    echo "调试信息: dns_servers变量内容='$dns_servers'"
     echo
     
     if ! test_dns_servers "$dns_servers"; then
@@ -666,8 +668,6 @@ configure_custom_dns() {
         echo
         echo "=== 配置自定义DNS服务器 ==="
         echo "DNS服务器: $custom_dns"
-        echo "调试信息: custom_dns变量长度=${#custom_dns}"
-        echo "调试信息: custom_dns变量内容='$custom_dns'"
         echo
         
         if ! test_dns_servers "$custom_dns"; then
@@ -787,16 +787,19 @@ main() {
                 ;;
             0)
                 log_info "退出DNS配置工具"
-                exit 0
+                return 0
                 ;;
             *)
                 log_warning "请输入0-6之间的数字"
                 ;;
         esac
         
-        echo
-        echo -e "${CYAN}按任意键返回主菜单...${NC}"
-        read -n 1 -s
+        # 如果不是退出选项，才显示"按任意键返回主菜单"
+        if [[ "$choice" != "0" ]]; then
+            echo
+            echo -e "${CYAN}按任意键返回主菜单...${NC}"
+            read -n 1 -s
+        fi
     done
 }
 
