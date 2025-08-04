@@ -169,7 +169,6 @@ run_optimization() {
 # 交互式菜单
 interactive_menu() {
     local show_header="${1:-true}"  # 默认显示标题框
-    echo
     
     while true; do
         # 根据参数决定是否显示标题框
