@@ -507,7 +507,7 @@ main() {
     check_system_compatibility
     
     # 3. 内核版本检查
-    check_kernel_version || log_warning "建议升级内核以获得最佳性能"
+    check_kernel_version "$MIN_KERNEL_VERSION" || log_warning "建议升级内核以获得最佳性能"
     
     # 4. 创建备份
     create_backup
