@@ -213,11 +213,11 @@ validate_password_strength() {
 input_user_password() {
     local username="$1"
     
-    echo
-    echo "=== 用户密码配置 ==="
-    echo "目标用户: $username"
-    echo "密码要求: 至少8位，建议包含大小写字母、数字和特殊字符"
-    echo "====================="
+    echo >&2
+    echo "=== 用户密码配置 ===" >&2
+    echo "目标用户: $username" >&2
+    echo "密码要求: 至少8位，建议包含大小写字母、数字和特殊字符" >&2
+    echo "=====================" >&2
     
     local password
     local confirm_password
@@ -229,7 +229,7 @@ input_user_password() {
         
         # 安全输入密码
         read -s -p "请输入新密码: " password
-        echo
+        echo >&2
         
         if [[ -z "$password" ]]; then
             log_warning "密码不能为空 (尝试 $attempts/$max_attempts)"
@@ -251,7 +251,7 @@ input_user_password() {
         
         # 确认密码
         read -s -p "请确认新密码: " confirm_password
-        echo
+        echo >&2
         
         if [[ "$password" != "$confirm_password" ]]; then
             log_error "两次输入的密码不一致，请重新输入 (尝试 $attempts/$max_attempts)"
@@ -262,7 +262,7 @@ input_user_password() {
             continue
         fi
         
-        log_info "密码设置成功"
+        echo "密码设置成功" >&2
         break
     done
     
@@ -308,80 +308,149 @@ select_user() {
     
     echo >&2
     echo "=== 选择目标用户 ===" >&2
-    echo "1) root (系统管理员)" >&2
-    echo "2) $current_user (当前用户)" >&2
-    echo "3) 其他用户 (手动输入)" >&2
-    echo "==================" >&2
     
-    local choice
-    local username
-    local max_attempts=5
-    local attempts=0
-    
-    while [[ $attempts -lt $max_attempts ]]; do
-        ((attempts++))
-        read -p "请选择要修改密码的用户 (1-3 或直接输入用户名): " choice
+    # 如果当前用户是root，只显示两个选项
+    if [[ "$current_user" == "root" ]]; then
+        echo "1) root (系统管理员)" >&2
+        echo "2) 其他用户 (手动输入)" >&2
+        echo "==================" >&2
         
-        case "$choice" in
-            1)
-                username="root"
-                log_info "已选择用户: $username"
-                break
-                ;;
-            2)
-                username="$current_user"
-                log_info "已选择用户: $username"
-                break
-                ;;
-            3)
-                read -p "请输入用户名: " username
-                if [[ -z "$username" ]]; then
-                    log_warning "用户名不能为空，请重新选择"
-                    continue
-                fi
-                if ! id "$username" >/dev/null 2>&1; then
-                    log_error "用户 $username 不存在，请重新选择"
-                    continue
-                fi
-                log_info "已选择用户: $username"
-                break
-                ;;
-            "root")
-                username="root"
-                log_info "已选择用户: $username"
-                break
-                ;;
-            "$current_user")
-                username="$current_user"
-                log_info "已选择用户: $username"
-                break
-                ;;
-            *)
-                # 检查是否直接输入了用户名
-                if [[ -n "$choice" ]]; then
-                    if id "$choice" >/dev/null 2>&1; then
-                        username="$choice"
-                        log_info "已选择用户: $username"
-                        break
+        local choice
+        local username
+        local max_attempts=5
+        local attempts=0
+        
+        while [[ $attempts -lt $max_attempts ]]; do
+            ((attempts++))
+            read -p "请选择要修改密码的用户 (1-2 或直接输入用户名): " choice
+            
+            case "$choice" in
+                1)
+                    username="root"
+                    echo "已选择用户: $username" >&2
+                    break
+                    ;;
+                2)
+                    read -p "请输入用户名: " username
+                    if [[ -z "$username" ]]; then
+                        log_warning "用户名不能为空，请重新选择"
+                        continue
+                    fi
+                    if ! id "$username" >/dev/null 2>&1; then
+                        log_error "用户 $username 不存在，请重新选择"
+                        continue
+                    fi
+                    echo "已选择用户: $username" >&2
+                    break
+                    ;;
+                "root")
+                    username="root"
+                    echo "已选择用户: $username" >&2
+                    break
+                    ;;
+                *)
+                    # 检查是否直接输入了用户名
+                    if [[ -n "$choice" ]]; then
+                        if id "$choice" >/dev/null 2>&1; then
+                            username="$choice"
+                            echo "已选择用户: $username" >&2
+                            break
+                        else
+                            log_error "用户 $choice 不存在，请重新选择"
+                            if [[ $attempts -eq $max_attempts ]]; then
+                                log_error "选择次数过多，退出用户选择"
+                                return 1
+                            fi
+                            continue
+                        fi
                     else
-                        log_error "用户 $choice 不存在，请重新选择"
+                        log_warning "请输入 1、2 或直接输入用户名 (尝试 $attempts/$max_attempts)"
                         if [[ $attempts -eq $max_attempts ]]; then
                             log_error "选择次数过多，退出用户选择"
                             return 1
                         fi
                         continue
                     fi
-                else
-                    log_warning "请输入 1、2、3 或直接输入用户名 (尝试 $attempts/$max_attempts)"
-                    if [[ $attempts -eq $max_attempts ]]; then
-                        log_error "选择次数过多，退出用户选择"
-                        return 1
+                    ;;
+            esac
+        done
+    else
+        # 当前用户不是root，显示三个选项
+        echo "1) root (系统管理员)" >&2
+        echo "2) $current_user (当前用户)" >&2
+        echo "3) 其他用户 (手动输入)" >&2
+        echo "==================" >&2
+        
+        local choice
+        local username
+        local max_attempts=5
+        local attempts=0
+        
+        while [[ $attempts -lt $max_attempts ]]; do
+            ((attempts++))
+            read -p "请选择要修改密码的用户 (1-3 或直接输入用户名): " choice
+            
+            case "$choice" in
+                1)
+                    username="root"
+                    echo "已选择用户: $username" >&2
+                    break
+                    ;;
+                2)
+                    username="$current_user"
+                    echo "已选择用户: $username" >&2
+                    break
+                    ;;
+                3)
+                    read -p "请输入用户名: " username
+                    if [[ -z "$username" ]]; then
+                        log_warning "用户名不能为空，请重新选择"
+                        continue
                     fi
-                    continue
-                fi
-                ;;
-        esac
-    done
+                    if ! id "$username" >/dev/null 2>&1; then
+                        log_error "用户 $username 不存在，请重新选择"
+                        continue
+                    fi
+                    echo "已选择用户: $username" >&2
+                    break
+                    ;;
+                "root")
+                    username="root"
+                    echo "已选择用户: $username" >&2
+                    break
+                    ;;
+                "$current_user")
+                    username="$current_user"
+                    echo "已选择用户: $username" >&2
+                    break
+                    ;;
+                *)
+                    # 检查是否直接输入了用户名
+                    if [[ -n "$choice" ]]; then
+                        if id "$choice" >/dev/null 2>&1; then
+                            username="$choice"
+                            echo "已选择用户: $username" >&2
+                            break
+                        else
+                            log_error "用户 $choice 不存在，请重新选择"
+                            if [[ $attempts -eq $max_attempts ]]; then
+                                log_error "选择次数过多，退出用户选择"
+                                return 1
+                            fi
+                            continue
+                        fi
+                    else
+                        log_warning "请输入 1、2、3 或直接输入用户名 (尝试 $attempts/$max_attempts)"
+                        if [[ $attempts -eq $max_attempts ]]; then
+                            log_error "选择次数过多，退出用户选择"
+                            return 1
+                        fi
+                        continue
+                    fi
+                    ;;
+            esac
+        done
+    fi
     
     if [[ -z "$username" ]]; then
         log_error "未能选择有效用户"
