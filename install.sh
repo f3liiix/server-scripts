@@ -188,7 +188,7 @@ interactive_menu() {
         echo -e "  1) 更新系统/软件包      ${GRAY}# 推荐${NC}"
         echo -e "  2) 开启BBR              ${GRAY}# 推荐${NC}"
         echo -e "  3) TCP网络调优          ${GRAY}# 推荐${NC}"
-        echo -e "  4) 一键网络优化          ${GRAY}# 一键运行1、2、3项${NC}"
+        echo -e "  4) 一键网络优化         ${GRAY}# 一键运行1、2、3项${NC}"
         echo -e "  ──────────────────────────────────────────────"
         echo -e "  5) DNS服务器配置        ${GRAY}# 修改服务器DNS${NC}"
         echo -e "  6) SSH安全配置          ${GRAY}# SSH端口和密码修改${NC}"

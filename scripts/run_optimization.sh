@@ -110,7 +110,7 @@ run_all_scripts() {
         
         # 脚本间暂停
         if [[ $current -lt $total_scripts ]]; then
-            log_info "等待 3 秒后继续下一个脚本..."
+            log_warning "等待 3 秒后继续下一个脚本..."
             sleep 3
         fi
     done
@@ -165,14 +165,12 @@ main() {
             
             # 脚本间暂停
             if [[ $current -lt $total_scripts ]]; then
-                log_info "等待 3 秒后继续下一个脚本..."
+                log_warning "等待 3 秒后继续下一个脚本..."
                 sleep 3
             fi
         done
         
         # 总结结果
-        echo
-        echo "=== 一键网络优化执行总结 ==="
         if [[ ${#failed_scripts[@]} -eq 0 ]]; then
             log_success "一键网络优化执行成功！"
         else
@@ -182,7 +180,7 @@ main() {
             done
             return 1
         fi
-        echo "=========================="
+        echo
     elif get_script_file "$target_script" >/dev/null 2>&1; then
         run_script "$target_script"
     else
