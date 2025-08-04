@@ -21,7 +21,7 @@ else
 fi
 
 # --- 配置项 ---
-readonly SCRIPT_VERSION="1.0"
+readonly SCRIPT_VERSION="1.0.0"
 readonly LOG_FILE="/var/log/server_optimization.log"
 
 # 可用的优化脚本

@@ -255,7 +255,7 @@ interactive_menu() {
         echo -e "  4) SSH安全配置          ${GRAY}# 端口和密码设置${NC}"
         echo -e "  5) 禁用IPv6             ${GRAY}# 避免双栈网络问题${NC}"
         echo -e "  6) 全部优化             ${GRAY}# 运行所有优化项目${NC}"
-        echo -e "  0) 退出程序"
+        echo -e "  0) 退出脚本"
         echo
         
         read -p "$(echo -e "${YELLOW}请输入选择 (0-6): ${NC}")" choice
@@ -292,21 +292,15 @@ interactive_menu() {
             *)
                 warn "无效选择，请输入 0-6 之间的数字"
                 sleep 1
-                ;;
-        esac
-        
-        # 询问是否继续
-        echo
-        read -p "$(echo -e "${CYAN}是否继续使用优化工具？(y/n): ${NC}")" continue_choice
-        case $continue_choice in
-            [Nn]|[Nn][Oo])
-                echo -e "${YELLOW}感谢使用服务器优化工具！${NC}"
-                exit 0
-                ;;
-            *)
                 continue
                 ;;
         esac
+        
+        # 按任意键返回主菜单
+        echo
+        echo -e "${CYAN}按任意键返回主菜单...${NC}"
+        read -n 1 -s
+        echo
     done
 }
 

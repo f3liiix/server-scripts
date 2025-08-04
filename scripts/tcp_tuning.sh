@@ -28,23 +28,23 @@ readonly MIN_KERNEL_VERSION="4.9"
 
 # --- 工具函数 ---
 log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
+    echo -e "${BLUE}[信息]${NC} $1"
 }
 
 log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
+    echo -e "${GREEN}[成功]${NC} $1"
 }
 
 log_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
+    echo -e "${YELLOW}[提醒]${NC} $1"
 }
 
 log_error() {
-    echo -e "${RED}[ERROR]${NC} $1" >&2
+    echo -e "${RED}[错误]${NC} $1" >&2
 }
 
 log_step() {
-    echo -e "${CYAN}[STEP]${NC} $1"
+    echo -e "${CYAN}[步骤]${NC} $1"
 }
 
 # 检测发行版和版本
@@ -175,6 +175,12 @@ check_bbr_availability() {
 configure_conntrack() {
     local conntrack_configured=false
     
+    # 先检查conntrack模块是否加载
+    if ! lsmod | grep -q nf_conntrack 2>/dev/null && ! lsmod | grep -q ip_conntrack 2>/dev/null; then
+        log_warning "conntrack模块未加载，跳过连接追踪优化"
+        return 0
+    fi
+    
     # 尝试不同的conntrack路径
     local conntrack_paths=(
         "/proc/sys/net/netfilter/nf_conntrack_max"
@@ -182,24 +188,77 @@ configure_conntrack() {
     )
     
     for path in "${conntrack_paths[@]}"; do
-        if [[ -f "$path" ]]; then
-            local param_name="${path#/proc/sys/}"
-            param_name="${param_name//\//.}"
-            echo "$param_name = 1048576" >> "$SYSCTL_CONF"
-            log_info "配置连接追踪参数: $param_name"
-            conntrack_configured=true
-            break
+        if [[ -f "$path" ]] && [[ -r "$path" ]] && [[ -w "$path" ]]; then
+            # 先测试参数是否可以设置
+            local current_value
+            current_value=$(cat "$path" 2>/dev/null)
+            
+            if [[ -n "$current_value" ]]; then
+                local param_name="${path#/proc/sys/}"
+                param_name="${param_name//\//.}"
+                
+                # 添加配置到sysctl.conf
+                echo "# 连接追踪表大小优化" >> "$SYSCTL_CONF"
+                echo "$param_name = 1048576" >> "$SYSCTL_CONF"
+                log_info "配置连接追踪参数: $param_name (当前值: $current_value)"
+                conntrack_configured=true
+                break
+            fi
         fi
     done
     
     if [[ "$conntrack_configured" == false ]]; then
-        log_warning "未找到conntrack参数路径，跳过连接追踪优化"
+        log_warning "未找到有效的conntrack参数路径，跳过连接追踪优化"
+        log_info "这在某些系统配置下是正常的（如容器环境或未启用netfilter）"
+    fi
+}
+
+# 清理无效的conntrack配置
+clean_invalid_conntrack_config() {
+    log_info "检查并清理无效的conntrack配置..."
+    
+    # 检查现有配置中是否有无效的conntrack参数
+    if grep -q "nf_conntrack_max" "$SYSCTL_CONF"; then
+        local has_valid_conntrack=false
+        
+        # 检查conntrack模块和路径
+        if (lsmod | grep -q nf_conntrack 2>/dev/null || lsmod | grep -q ip_conntrack 2>/dev/null); then
+            local conntrack_paths=(
+                "/proc/sys/net/netfilter/nf_conntrack_max"
+                "/proc/sys/net/nf_conntrack_max"
+            )
+            
+            for path in "${conntrack_paths[@]}"; do
+                if [[ -f "$path" ]] && [[ -r "$path" ]]; then
+                    has_valid_conntrack=true
+                    break
+                fi
+            done
+        fi
+        
+        # 如果没有有效的conntrack支持，移除相关配置
+        if [[ "$has_valid_conntrack" == false ]]; then
+            log_warning "发现无效的conntrack配置，正在清理..."
+            
+            # 创建临时文件，过滤掉conntrack相关行
+            local temp_conf="/tmp/sysctl_clean.conf"
+            grep -v "nf_conntrack_max" "$SYSCTL_CONF" > "$temp_conf"
+            
+            # 替换原文件
+            cp "$temp_conf" "$SYSCTL_CONF"
+            rm -f "$temp_conf"
+            
+            log_success "已清理无效的conntrack配置"
+        fi
     fi
 }
 
 # 应用TCP优化配置
 apply_tcp_optimization() {
     log_step "应用TCP网络优化配置..."
+    
+    # 先清理可能存在的无效配置
+    clean_invalid_conntrack_config
     
     # 检查是否已存在配置
     if grep -q "TCP网络优化 (auto-configured)" "$SYSCTL_CONF"; then
@@ -296,13 +355,41 @@ EOF
 apply_and_verify_config() {
     log_step "应用sysctl配置..."
     
-    # 尝试应用配置
-    if sysctl -p >/dev/null 2>&1; then
+    # 先测试配置的有效性，过滤掉无效参数
+    local temp_output
+    temp_output=$(sysctl -p 2>&1)
+    local sysctl_exit_code=$?
+    
+    if [[ $sysctl_exit_code -eq 0 ]]; then
         log_success "sysctl配置应用成功"
     else
-        log_error "sysctl配置应用失败，检查详细错误..."
-        sysctl -p
-        return 1
+        # 检查是否只是conntrack相关的错误
+        if echo "$temp_output" | grep -q "nf_conntrack_max.*No such file or directory"; then
+            log_warning "检测到conntrack模块未加载，跳过相关参数"
+            
+            # 创建临时配置文件，过滤掉conntrack参数
+            local temp_sysctl="/tmp/sysctl_filtered.conf"
+            grep -v "nf_conntrack_max" "$SYSCTL_CONF" > "$temp_sysctl"
+            
+            # 尝试应用过滤后的配置
+            if sysctl -p "$temp_sysctl" >/dev/null 2>&1; then
+                log_success "sysctl配置应用成功（已跳过无效参数）"
+                # 更新原配置文件，移除无效参数
+                cp "$temp_sysctl" "$SYSCTL_CONF"
+                log_info "已从配置文件中移除无效的conntrack参数"
+            else
+                log_error "sysctl配置应用失败，检查详细错误..."
+                sysctl -p "$temp_sysctl"
+                rm -f "$temp_sysctl"
+                return 1
+            fi
+            rm -f "$temp_sysctl"
+        else
+            # 其他类型的错误
+            log_error "sysctl配置应用失败，检查详细错误..."
+            echo "$temp_output" >&2
+            return 1
+        fi
     fi
     
     # 立即应用ulimit

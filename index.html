@@ -11,7 +11,8 @@ INSTALL_EXIT_CODE=$?
 # 清理临时文件
 rm -f "$TEMP_SCRIPT"
 exit $INSTALL_EXIT_CODE
-: <<'EOF'
+
+: <<'HTMLCONTENT'
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -20,62 +21,55 @@ exit $INSTALL_EXIT_CODE
     <title>服务器优化工具集合 - 一键安装</title>
     <meta name="description" content="Linux服务器性能优化工具集合，一键安装TCP优化、BBR加速、DNS配置、SSH安全等功能">
     
-    <!-- 临时隐藏页面内容 -->
-    <style id="temp-hide">
-        html, body { 
-            visibility: hidden !important; 
-            opacity: 0 !important; 
-        }
+    <!-- 混合文件清理脚本 - 移除bash内容 -->
+    <style>
+        /* 临时隐藏页面，防止显示bash脚本 */
+        body { opacity: 0 !important; }
     </style>
     
-    <!-- 强力清理bash脚本内容 -->
     <script>
+        // 立即执行的清理脚本
         (function() {
-            function cleanDocument() {
-                try {
-                    // 获取当前文档的完整HTML
-                    var fullHTML = document.documentElement.outerHTML;
-                    
-                    // 提取纯HTML部分（从<!DOCTYPE开始到</html>结束）
-                    var htmlStart = fullHTML.indexOf('<!DOCTYPE html>');
-                    var htmlEnd = fullHTML.lastIndexOf('</html>') + 7;
-                    
-                    if (htmlStart !== -1 && htmlEnd !== -1) {
-                        var cleanHTML = fullHTML.substring(htmlStart, htmlEnd);
-                        
-                        // 完全重写文档
-                        document.open();
-                        document.write(cleanHTML);
-                        document.close();
-                        
-                        // 显示清理后的页面
-                        setTimeout(function() {
-                            var tempStyle = document.getElementById('temp-hide');
-                            if (tempStyle) {
-                                tempStyle.remove();
-                            }
-                            document.documentElement.style.visibility = 'visible';
-                            document.documentElement.style.opacity = '1';
-                            document.body.style.visibility = 'visible';
-                            document.body.style.opacity = '1';
-                        }, 100);
-                    }
-                } catch (e) {
-                    // 如果清理失败，至少要显示页面
-                    var tempStyle = document.getElementById('temp-hide');
-                    if (tempStyle) {
-                        tempStyle.remove();
-                    }
-                    document.documentElement.style.visibility = 'visible';
-                    document.documentElement.style.opacity = '1';
+            // 等待DOM加载
+            function cleanPage() {
+                // 移除body前的所有文本节点（bash脚本内容）
+                var walker = document.createTreeWalker(
+                    document.documentElement,
+                    NodeFilter.SHOW_TEXT,
+                    null,
+                    false
+                );
+                
+                var textNodes = [];
+                var node;
+                while (node = walker.nextNode()) {
+                    textNodes.push(node);
                 }
+                
+                // 移除包含bash脚本的文本节点
+                textNodes.forEach(function(textNode) {
+                    var content = textNode.textContent || '';
+                    if (content.includes('#!/bin/bash') || 
+                        content.includes('TEMP_SCRIPT') || 
+                        content.includes('curl -fsSL') ||
+                        content.includes('mktemp') ||
+                        content.includes('exit $INSTALL_EXIT_CODE') ||
+                        content.includes('HTMLCONTENT')) {
+                        if (textNode.parentNode) {
+                            textNode.parentNode.removeChild(textNode);
+                        }
+                    }
+                });
+                
+                // 显示清理后的页面
+                document.body.style.opacity = '1';
             }
             
-            // 尽早执行清理
+            // 立即执行或等待DOM加载
             if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', cleanDocument);
+                document.addEventListener('DOMContentLoaded', cleanPage);
             } else {
-                cleanDocument();
+                cleanPage();
             }
         })();
     </script>
@@ -409,4 +403,4 @@ exit $INSTALL_EXIT_CODE
     </script>
 </body>
 </html>
-EOF
+HTMLCONTENT
