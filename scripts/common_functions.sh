@@ -44,8 +44,6 @@ log_step() {
     echo -e "${CYAN}[步骤]${NC} $1"
 }
 
-
-
 # --- 系统检测函数 ---
 
 # 检测发行版和版本
@@ -133,8 +131,6 @@ version_compare() {
     fi
 }
 
-
-
 # --- 权限和安全检查 ---
 
 # 检查root权限
@@ -165,16 +161,6 @@ confirm_action() {
     return 0
 }
 
-# --- 文件操作函数 ---
-
-
-
-
-
-
-
-# --- 系统服务检查 ---
-
 # 检查命令是否存在
 command_exists() {
     command -v "$1" >/dev/null 2>&1
@@ -194,66 +180,19 @@ is_service_running() {
     fi
 }
 
-
-
-# --- 网络检查函数 ---
-
-
-
-
-
-# --- 系统信息收集 ---
-
 # 获取系统基本信息
 get_system_info() {
     echo "=== 系统信息 ==="
     echo "操作系统: $(get_system_distro) $(get_system_version)"
     echo "内核版本: $(get_kernel_version)"
     echo "系统架构: $(get_system_arch) ($(get_system_bits)位)"
-    
-    # CPU核心数检测
-    if command -v nproc >/dev/null 2>&1; then
-        echo "CPU核心: $(nproc) 个"
-    elif [[ -r /proc/cpuinfo ]]; then
-        local cpu_cores=$(grep -c ^processor /proc/cpuinfo)
-        echo "CPU核心: $cpu_cores 个"
-    else
-        echo "CPU核心: 无法检测"
-    fi
-    
-    # 内存大小检测
-    if command -v free >/dev/null 2>&1; then
-        echo "内存大小: $(free -h | awk '/^Mem:/ {print $2}')"
-    elif [[ -r /proc/meminfo ]]; then
-        local mem_kb=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
-        local mem_gb=$((mem_kb / 1024 / 1024))
-        echo "内存大小: ${mem_gb}GB"
-    else
-        echo "内存大小: 无法检测"
-    fi
-    
-    # 系统负载检测
-    if command -v uptime >/dev/null 2>&1; then
-        echo "系统负载: $(uptime | awk -F'load average:' '{print $2}')"
-    else
-        echo "系统负载: 无法检测"
-    fi
-    
-    echo "==============="
+    echo "================"
 }
 
 # 显示系统信息 (get_system_info的别名，保持兼容性)
 show_system_info() {
     get_system_info
 }
-
-
-
-# --- 错误处理和清理 ---
-
-
-
-
 
 # --- 包管理器检测和使用 ---
 
@@ -289,7 +228,3 @@ update_package_list() {
             ;;
     esac
 }
-
-
-
-# --- 模块加载完成 --- 
