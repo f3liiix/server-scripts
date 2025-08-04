@@ -4,9 +4,9 @@
 # Script Name: tcp_tuning.sh
 # Description: Enhanced TCP network optimization script for Debian/Ubuntu systems
 #              with better compatibility, error handling, and rollback support.
-# Author:      Optimized version
-# Date:        2025-01-08
-# Version:     2.0
+# Author:      f3liiix
+# Date:        2025-08-05
+# Version:     1.0.0
 # ==============================================================================
 
 set -euo pipefail  # 严格模式：遇到错误立即退出
@@ -20,7 +20,7 @@ readonly CYAN='\033[0;36m'
 readonly NC='\033[0m' # No Color
 
 # --- 配置项 ---
-readonly SCRIPT_VERSION="2.0"
+readonly SCRIPT_VERSION="1.0.0"
 readonly BACKUP_DIR="/etc/backup_tcp_tuning_$(date +%Y%m%d_%H%M%S)"
 readonly SYSCTL_CONF="/etc/sysctl.conf"
 readonly LIMITS_CONF="/etc/security/limits.conf"
@@ -261,7 +261,7 @@ apply_tcp_optimization() {
     clean_invalid_conntrack_config
     
     # 检查是否已存在配置
-    if grep -q "TCP网络优化 (auto-configured)" "$SYSCTL_CONF"; then
+    if grep -q "TCP网络调优" "$SYSCTL_CONF"; then
         log_warning "检测到已存在的TCP优化配置，将跳过重复配置"
         return 0
     fi
@@ -269,7 +269,7 @@ apply_tcp_optimization() {
     # 添加TCP优化配置
     cat >> "$SYSCTL_CONF" << 'EOF'
 
-# ===== TCP网络优化 v2.0 (auto-configured) =====
+# ===== TCP网络调优 v1.0.0 =====
 # 连接队列优化
 net.core.netdev_max_backlog = 100000
 net.core.somaxconn = 8192
@@ -334,7 +334,7 @@ apply_ulimit_optimization() {
     
     cat >> "$LIMITS_CONF" << 'EOF'
 
-# ===== 文件描述符限制 v2.0 (auto-configured) =====
+# ===== 文件描述符限制 v1.0.0 =====
 * soft nofile 1048576
 * hard nofile 1048576
 root soft nofile 1048576
@@ -490,7 +490,6 @@ rollback_changes() {
 
 # 主程序
 main() {
-    echo "=== TCP网络优化脚本 v$SCRIPT_VERSION ==="
     echo
     
     # 1. 检查root权限

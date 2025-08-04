@@ -142,8 +142,6 @@ run_script() {
     
     local script_path="$SCRIPT_DIR/$script_file"
     
-    log_step "准备运行脚本: $script_key ($script_file)"
-    
     # 检查脚本
     if ! check_script "$script_key"; then
         return 1

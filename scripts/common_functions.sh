@@ -25,28 +25,28 @@ readonly NC='\033[0m' # No Color
 
 # --- 日志函数 ---
 log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
+    echo -e "${BLUE}[信息]${NC} $1"
 }
 
 log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
+    echo -e "${GREEN}[成功]${NC} $1"
 }
 
 log_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
+    echo -e "${YELLOW}[提醒]${NC} $1"
 }
 
 log_error() {
-    echo -e "${RED}[ERROR]${NC} $1" >&2
+    echo -e "${RED}[错误]${NC} $1" >&2
 }
 
 log_step() {
-    echo -e "${CYAN}[STEP]${NC} $1"
+    echo -e "${CYAN}[步骤]${NC} $1"
 }
 
 log_debug() {
     if [[ "${DEBUG:-}" == "true" ]]; then
-        echo -e "${PURPLE}[DEBUG]${NC} $1"
+        echo -e "${PURPLE}[调试]${NC} $1"
     fi
 }
 

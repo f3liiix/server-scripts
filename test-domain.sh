@@ -13,10 +13,8 @@ readonly DOMAIN="ss.hide.ss"
 readonly TEST_ENDPOINTS=(
     "/"
     "/install"
-    "/bootstrap"
     "/version"
     "/install.sh"
-    "/bootstrap.sh"
     "/version.txt"
 )
 
