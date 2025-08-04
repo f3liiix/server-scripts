@@ -94,20 +94,14 @@ validate_port() {
         return 1
     fi
     
-    # 检查端口是否被占用
+    # 检查端口是否被占用（静默检查，不显示警告）
     if command_exists netstat; then
         if netstat -tuln | grep -q ":$port "; then
-            log_warning "端口 $port 可能已被占用"
-            if ! confirm_action "是否继续使用此端口？" "N"; then
-                return 1
-            fi
+            return 1
         fi
     elif command_exists ss; then
         if ss -tuln | grep -q ":$port "; then
-            log_warning "端口 $port 可能已被占用"
-            if ! confirm_action "是否继续使用此端口？" "N"; then
-                return 1
-            fi
+            return 1
         fi
     fi
     
@@ -126,17 +120,11 @@ input_ssh_port() {
         # 如果为空，保持当前端口
         if [[ -z "$new_port" ]]; then
             new_port="$current_port"
-            log_info "保持当前SSH端口: $new_port"
             break
         fi
         
         # 验证端口
         if validate_port "$new_port"; then
-            if [[ "$new_port" == "$current_port" ]]; then
-                log_info "端口未变更"
-            else
-                log_info "新SSH端口: $new_port"
-            fi
             break
         else
             log_warning "请输入有效的端口号"
@@ -164,7 +152,6 @@ change_ssh_port() {
         local backup_file="$BACKUP_DIR/sshd_config.bak"
         mkdir -p "$BACKUP_DIR"
         cp "$SSHD_CONFIG" "$backup_file"
-        log_info "已备份SSH配置: $backup_file"
     else
         log_error "SSH配置文件不存在: $SSHD_CONFIG"
         return 1
@@ -172,8 +159,8 @@ change_ssh_port() {
     
     # 修改端口配置
     if grep -q "^[[:space:]]*Port[[:space:]]" "$SSHD_CONFIG"; then
-        # 替换现有Port行
-        sed -i "/^[[:space:]]*Port[[:space:]]/c\Port $new_port" "$SSHD_CONFIG"
+        # 替换现有Port行，使用更安全的方式
+        sed -i "/^[[:space:]]*Port[[:space:]]/c\\Port $new_port" "$SSHD_CONFIG"
     else
         # 添加Port配置
         echo "Port $new_port" >> "$SSHD_CONFIG"
@@ -476,26 +463,16 @@ show_connection_info() {
     echo "=== 🔐 SSH连接信息 ==="
     echo "服务器地址: $server_ip"
     echo "SSH端口: $new_port"
-    echo
-    echo "新的SSH连接命令:"
-    if [[ "$new_port" != "$DEFAULT_SSH_PORT" ]]; then
-        echo "  ssh -p $new_port username@$server_ip"
-    else
-        echo "  ssh username@$server_ip"
-    fi
-    echo
-    echo "📋 重要提醒:"
-    echo "1. 请在新终端测试SSH连接后再关闭当前会话"
-    echo "2. 确保防火墙允许新端口的连接"
-    echo "3. 如无法连接，请使用服务器控制台恢复配置"
     echo "========================"
 }
 
 # 显示防火墙配置建议
 show_firewall_suggestions() {
     local new_port="$1"
+    local current_port
+    current_port=$(get_current_ssh_port)
     
-    if [[ "$new_port" == "$DEFAULT_SSH_PORT" ]]; then
+    if [[ "$new_port" == "$current_port" ]]; then
         return 0
     fi
     
@@ -619,7 +596,6 @@ main() {
                     log_error "SSH服务重启失败"
                 else
                     verify_ssh_config
-                    show_connection_info "$new_port"
                     show_firewall_suggestions "$new_port"
                 fi
                 ;;
@@ -678,7 +654,6 @@ main() {
                 if [[ "$success" == true ]]; then
                     if restart_ssh_service; then
                         verify_ssh_config
-                        show_connection_info "$new_port"
                         show_firewall_suggestions "$new_port"
                     else
                         log_error "SSH服务重启失败"
@@ -690,6 +665,7 @@ main() {
                 ;;
             0)
                 log_info "退出SSH配置工具"
+                echo
                 exit 0
                 ;;
             *)
