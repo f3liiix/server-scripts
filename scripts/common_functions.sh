@@ -3,9 +3,9 @@
 # ==============================================================================
 # Script Name: common_functions.sh
 # Description: Common utility functions for server optimization scripts
-# Author:      Optimized version
-# Date:        2025-01-08
-# Version:     1.0
+# Author:      f3liiix
+# Date:        2025-08-05
+# Version:     1.0.0
 # ==============================================================================
 
 # 防止重复加载
@@ -44,11 +44,7 @@ log_step() {
     echo -e "${CYAN}[步骤]${NC} $1"
 }
 
-log_debug() {
-    if [[ "${DEBUG:-}" == "true" ]]; then
-        echo -e "${PURPLE}[调试]${NC} $1"
-    fi
-}
+
 
 # --- 系统检测函数 ---
 
@@ -58,9 +54,14 @@ detect_system() {
     local version=""
     
     if [[ -f /etc/os-release ]]; then
-        . /etc/os-release
-        distro="$ID"
-        version="$VERSION_ID"
+        # 使用grep和cut解析，避免source导致的变量冲突
+        distro=$(grep '^ID=' /etc/os-release | cut -d'=' -f2 | tr -d '"' || echo "unknown")
+        version=$(grep '^VERSION_ID=' /etc/os-release | cut -d'=' -f2 | tr -d '"' || echo "unknown")
+        
+        # 如果VERSION_ID不存在，尝试使用VERSION
+        if [[ "$version" == "unknown" ]]; then
+            version=$(grep '^VERSION=' /etc/os-release | cut -d'=' -f2 | tr -d '"' || echo "unknown")
+        fi
     elif [[ -f /etc/debian_version ]]; then
         distro="debian"
         version=$(cat /etc/debian_version)
@@ -73,6 +74,30 @@ detect_system() {
     fi
     
     echo "$distro:$version"
+}
+
+# 获取系统发行版名称
+get_system_distro() {
+    local system_info
+    system_info=$(detect_system)
+    echo "${system_info%:*}"
+}
+
+# 获取系统版本
+get_system_version() {
+    local system_info
+    system_info=$(detect_system)
+    echo "${system_info#*:}"
+}
+
+# 获取系统架构
+get_system_arch() {
+    uname -m
+}
+
+# 获取系统位数
+get_system_bits() {
+    getconf LONG_BIT 2>/dev/null || echo "unknown"
 }
 
 # 检查是否为Debian系发行版
@@ -108,20 +133,7 @@ version_compare() {
     fi
 }
 
-# 检查内核版本是否满足最低要求
-check_kernel_version() {
-    local min_version="$1"
-    local current_version
-    current_version=$(get_kernel_version)
-    
-    if version_compare "$current_version" "$min_version"; then
-        log_success "内核版本 $current_version 满足要求 (>= $min_version)"
-        return 0
-    else
-        log_warning "内核版本 $current_version 不满足要求 (需要 >= $min_version)"
-        return 1
-    fi
-}
+
 
 # --- 权限和安全检查 ---
 
@@ -155,45 +167,11 @@ confirm_action() {
 
 # --- 文件操作函数 ---
 
-# 安全创建备份文件
-create_backup() {
-    local source_file="$1"
-    local backup_suffix="${2:-.bak.$(date +%Y%m%d_%H%M%S)}"
-    
-    if [[ -f "$source_file" ]]; then
-        local backup_file="${source_file}${backup_suffix}"
-        cp "$source_file" "$backup_file"
-        log_info "已创建备份: $backup_file"
-        echo "$backup_file"
-        return 0
-    else
-        log_error "源文件不存在: $source_file"
-        return 1
-    fi
-}
 
-# 检查文件是否包含指定内容
-file_contains() {
-    local file="$1"
-    local pattern="$2"
-    
-    [[ -f "$file" ]] && grep -Fq "$pattern" "$file"
-}
 
-# 安全地向文件添加内容（避免重复）
-append_to_file() {
-    local file="$1"
-    local content="$2"
-    local marker="$3"
-    
-    if [[ -n "$marker" ]] && file_contains "$file" "$marker"; then
-        log_info "检测到已存在的配置标记，跳过添加"
-        return 0
-    fi
-    
-    echo "$content" >> "$file"
-    log_success "内容已添加到 $file"
-}
+
+
+
 
 # --- 系统服务检查 ---
 
@@ -216,92 +194,66 @@ is_service_running() {
     fi
 }
 
-# 启动服务
-start_service() {
-    local service="$1"
-    
-    if command_exists systemctl; then
-        systemctl start "$service"
-    elif command_exists service; then
-        service "$service" start
-    else
-        log_error "无法启动服务: $service"
-        return 1
-    fi
-}
+
 
 # --- 网络检查函数 ---
 
-# 检查网络连接
-check_network() {
-    local host="${1:-8.8.8.8}"
-    local timeout="${2:-5}"
-    
-    if ping -c 1 -W "$timeout" "$host" >/dev/null 2>&1; then
-        log_success "网络连接正常"
-        return 0
-    else
-        log_warning "网络连接检查失败"
-        return 1
-    fi
-}
 
-# 检查端口是否开放
-is_port_open() {
-    local host="$1"
-    local port="$2"
-    local timeout="${3:-5}"
-    
-    if command_exists nc; then
-        nc -z -w "$timeout" "$host" "$port" 2>/dev/null
-    elif command_exists telnet; then
-        timeout "$timeout" telnet "$host" "$port" </dev/null >/dev/null 2>&1
-    else
-        log_warning "无法检查端口 $host:$port (缺少nc或telnet)"
-        return 1
-    fi
-}
+
+
 
 # --- 系统信息收集 ---
 
 # 获取系统基本信息
 get_system_info() {
     echo "=== 系统信息 ==="
-    echo "操作系统: $(detect_system)"
-    echo "内核版本: $(uname -r)"
-    echo "架构: $(uname -m)"
-    echo "CPU: $(nproc) 核心"
-    echo "内存: $(free -h | awk '/^Mem:/ {print $2}')"
-    echo "负载: $(uptime | awk -F'load average:' '{print $2}')"
+    echo "操作系统: $(get_system_distro) $(get_system_version)"
+    echo "内核版本: $(get_kernel_version)"
+    echo "系统架构: $(get_system_arch) ($(get_system_bits)位)"
+    
+    # CPU核心数检测
+    if command -v nproc >/dev/null 2>&1; then
+        echo "CPU核心: $(nproc) 个"
+    elif [[ -r /proc/cpuinfo ]]; then
+        local cpu_cores=$(grep -c ^processor /proc/cpuinfo)
+        echo "CPU核心: $cpu_cores 个"
+    else
+        echo "CPU核心: 无法检测"
+    fi
+    
+    # 内存大小检测
+    if command -v free >/dev/null 2>&1; then
+        echo "内存大小: $(free -h | awk '/^Mem:/ {print $2}')"
+    elif [[ -r /proc/meminfo ]]; then
+        local mem_kb=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+        local mem_gb=$((mem_kb / 1024 / 1024))
+        echo "内存大小: ${mem_gb}GB"
+    else
+        echo "内存大小: 无法检测"
+    fi
+    
+    # 系统负载检测
+    if command -v uptime >/dev/null 2>&1; then
+        echo "系统负载: $(uptime | awk -F'load average:' '{print $2}')"
+    else
+        echo "系统负载: 无法检测"
+    fi
+    
     echo "==============="
 }
 
-# 显示脚本执行环境
-show_environment() {
-    log_info "脚本执行环境:"
-    log_info "- 用户: $(whoami)"
-    log_info "- 工作目录: $(pwd)"
-    log_info "- Shell: $SHELL"
-    log_info "- 时间: $(date)"
+# 显示系统信息 (get_system_info的别名，保持兼容性)
+show_system_info() {
+    get_system_info
 }
+
+
 
 # --- 错误处理和清理 ---
 
-# 设置错误陷阱
-setup_error_handling() {
-    local cleanup_function="$1"
-    
-    set -euo pipefail
-    
-    if [[ -n "$cleanup_function" ]]; then
-        trap "$cleanup_function" ERR EXIT
-    fi
-}
 
-# 清除错误陷阱
-clear_error_handling() {
-    trap - ERR EXIT
-}
+
+
 
 # --- 包管理器检测和使用 ---
 
@@ -338,91 +290,6 @@ update_package_list() {
     esac
 }
 
-# 安装包
-install_package() {
-    local package="$1"
-    local pm
-    pm=$(detect_package_manager)
-    
-    case "$pm" in
-        "apt")
-            apt-get install -y "$package"
-            ;;
-        "yum"|"dnf")
-            "$pm" install -y "$package"
-            ;;
-        "pacman")
-            pacman -S --noconfirm "$package"
-            ;;
-        *)
-            log_error "无法安装包 $package：未知包管理器"
-            return 1
-            ;;
-    esac
-}
 
-# --- 实用工具函数 ---
 
-# 生成随机字符串
-generate_random_string() {
-    local length="${1:-16}"
-    tr -dc 'A-Za-z0-9' </dev/urandom | head -c "$length"
-}
-
-# 计算文件哈希
-calculate_file_hash() {
-    local file="$1"
-    local algorithm="${2:-sha256}"
-    
-    if command_exists "${algorithm}sum"; then
-        "${algorithm}sum" "$file" | cut -d' ' -f1
-    else
-        log_error "哈希算法 $algorithm 不可用"
-        return 1
-    fi
-}
-
-# 等待用户按键
-wait_for_keypress() {
-    local message="${1:-按任意键继续...}"
-    read -n 1 -s -r -p "$message"
-    echo
-}
-
-# 显示进度条
-show_progress() {
-    local current="$1"
-    local total="$2"
-    local width="${3:-50}"
-    
-    local percentage=$((current * 100 / total))
-    local filled=$((current * width / total))
-    local empty=$((width - filled))
-    
-    printf "\r["
-    printf "%*s" "$filled" | tr ' ' '='
-    printf "%*s" "$empty" | tr ' ' '-'
-    printf "] %d%%" "$percentage"
-}
-
-# --- 日志轮转 ---
-
-# 创建日志文件
-create_log_file() {
-    local log_file="$1"
-    local max_size="${2:-10M}"
-    
-    # 创建日志目录
-    mkdir -p "$(dirname "$log_file")"
-    
-    # 如果日志文件过大，进行轮转
-    if [[ -f "$log_file" ]] && [[ $(stat -f%z "$log_file" 2>/dev/null || stat -c%s "$log_file") -gt $((10*1024*1024)) ]]; then
-        mv "$log_file" "${log_file}.old"
-    fi
-    
-    touch "$log_file"
-    echo "$log_file"
-}
-
-# --- 模块加载完成 ---
-log_debug "通用函数库加载完成" 
+# --- 模块加载完成 --- 

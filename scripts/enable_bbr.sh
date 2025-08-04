@@ -5,9 +5,9 @@
 # Description: Enhanced BBR (Bottleneck Bandwidth and RTT) enablement script
 #              Based on teddysun's BBR script with improvements and integration
 # Original:    https://raw.githubusercontent.com/teddysun/across/master/bbr.sh
-# Author:      Optimized version (based on teddysun's work)
-# Date:        2025-01-08
-# Version:     2.0
+# Author:      f3liiix
+# Date:        2025-08-05
+# Version:     1.0.0
 # ==============================================================================
 
 set -euo pipefail  # 严格模式：遇到错误立即退出
@@ -25,7 +25,7 @@ else
 fi
 
 # --- 配置项 ---
-readonly SCRIPT_VERSION="2.0"
+readonly SCRIPT_VERSION="1.0.0"
 readonly BACKUP_DIR="/etc/backup_bbr_$(date +%Y%m%d_%H%M%S)"
 readonly SYSCTL_CONF="/etc/sysctl.conf"
 readonly MIN_KERNEL_VERSION="4.9"
@@ -483,7 +483,7 @@ verify_bbr_status() {
         else
             echo "BBR模块状态: ⚠️ 未检测到模块（可能内置）"
         fi
-        echo "=================="
+        echo "==================="
         
         return 0
     else
@@ -524,23 +524,10 @@ prompt_reboot() {
     fi
 }
 
-# 显示系统信息
-show_system_info() {
-    local system_info
-    system_info=$(detect_system)
-    local distro="${system_info%:*}"
-    local version="${system_info#*:}"
-    
-    echo "=== 系统信息 ==="
-    echo "操作系统: $distro $version"
-    echo "内核版本: $(uname -r)"
-    echo "系统架构: $(uname -m) ($(getconf LONG_BIT)位)"
-    echo "==============="
-}
+# 注: show_system_info 函数现在统一使用 common_functions.sh 中的实现
 
 # 主程序
 main() {
-    echo "=== BBR启用脚本 v$SCRIPT_VERSION ==="
     echo
     
     # 1. 权限检查

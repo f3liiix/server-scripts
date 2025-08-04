@@ -47,51 +47,8 @@ log_step() {
     echo -e "${CYAN}[步骤]${NC} $1"
 }
 
-# 检测发行版和版本
-detect_system() {
-    local distro=""
-    local version=""
-    
-    if [[ -f /etc/os-release ]]; then
-        . /etc/os-release
-        distro="$ID"
-        version="$VERSION_ID"
-    elif [[ -f /etc/debian_version ]]; then
-        distro="debian"
-        version=$(cat /etc/debian_version)
-    else
-        distro="unknown"
-        version="unknown"
-    fi
-    
-    echo "$distro:$version"
-}
-
-# 检查内核版本
-check_kernel_version() {
-    local current_version
-    current_version=$(uname -r | cut -d. -f1,2)
-    
-    if version_compare "$current_version" "$MIN_KERNEL_VERSION"; then
-        log_success "内核版本 $current_version 支持高级TCP功能"
-        return 0
-    else
-        log_warning "内核版本 $current_version 可能不支持某些高级功能（建议 $MIN_KERNEL_VERSION+）"
-        return 1
-    fi
-}
-
-# 版本比较函数
-version_compare() {
-    local version1="$1"
-    local version2="$2"
-    
-    if [[ "$(printf '%s\n' "$version1" "$version2" | sort -V | head -n1)" == "$version2" ]]; then
-        return 0  # version1 >= version2
-    else
-        return 1  # version1 < version2
-    fi
-}
+# 注: detect_system, check_kernel_version, version_compare 等函数
+# 现在统一使用 common_functions.sh 中的实现
 
 # 检查系统兼容性
 check_system_compatibility() {
