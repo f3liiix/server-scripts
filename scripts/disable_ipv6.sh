@@ -222,80 +222,54 @@ rollback_changes() {
 # --- 主程序 ---
 main() {
     echo
-    echo -e "${BLUE}🚫 IPv6禁用工具${NC}"
-    echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
-    
-    # 开始脚本计时
-    start_script_timer
+    echo -e "${GREEN}🚫 IPv6禁用工具${NC}"
+    echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
     
     # 1. 检查root权限
     if ! check_root; then
-        end_script_timer
         exit 1
     fi
     
     # 2. 检查系统兼容性
-    start_task_timer "检查系统兼容性"
     check_compatibility
-    end_task_timer
     
     # 3. 检查当前IPv6状态
-    start_task_timer "检查IPv6状态"
     if is_ipv6_disabled; then
         log_info "IPv6 已处于禁用状态"
         verify_ipv6_disabled
-        end_task_timer
-        end_script_timer
         return 0
     fi
-    end_task_timer
     
     # 4. 创建备份
-    start_task_timer "创建配置备份"
     local backup_file
     backup_file=$(backup_config) || {
         log_error "创建备份失败"
-        end_script_timer
         exit 1
     }
-    end_task_timer
     
     # 5. 设置错误处理
-    trap "rollback_changes '$backup_file'; end_script_timer; exit 1" ERR
+    trap "rollback_changes '$backup_file'; exit 1" ERR
     
     # 6. 添加配置
-    start_task_timer "添加IPv6禁用配置"
     if ! add_ipv6_config; then
         log_error "添加IPv6配置失败"
-        end_script_timer
         exit 1
     fi
-    end_task_timer
     
     # 7. 应用配置
-    start_task_timer "应用IPv6配置"
     if ! apply_config; then
         log_error "应用IPv6配置失败"
-        end_script_timer
         exit 1
     fi
-    end_task_timer
     
     # 8. 验证结果
-    start_task_timer "验证IPv6禁用状态"
     if verify_ipv6_disabled; then
-        end_task_timer
-        start_task_timer "显示后续建议"
         show_recommendations
-        end_task_timer
         log_success "IPv6 禁用操作完成！"
         echo
-        end_script_timer
         return 0
     else
-        end_task_timer
         log_error "IPv6 禁用失败，请检查系统日志"
-        end_script_timer
         return 1
     fi
     

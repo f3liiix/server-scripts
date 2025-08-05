@@ -701,8 +701,6 @@ main() {
                 show_current_config
                 ;;
             0)
-                log_info "退出SSH配置工具"
-                echo
                 exit 0
                 ;;
             *)
