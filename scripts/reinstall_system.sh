@@ -147,7 +147,7 @@ get_ssh_port() {
 # 获取 SSH 密码
 get_ssh_password() {
     while true; do
-        echo -e "\n${INFO} 请输入 SSH 密码 (默认密码为 12345678): ${YELLOW}"
+        echo -ne "\n${INFO}🔐 请输入 SSH 密码 (默认密码为 12345678): ${YELLOW}"
         read -rsp "" SSH_PASSWORD
         echo -ne "${NC}"
         
@@ -159,7 +159,7 @@ get_ssh_password() {
         fi
         
         echo  # 换行
-        echo -e "${INFO} 请再次输入 SSH 密码以确认: ${YELLOW}"
+        echo -ne "${INFO}🔐 请再次输入 SSH 密码以确认: ${YELLOW}"
         read -rsp "" SSH_PASSWORD_CONFIRM
         echo -ne "${NC}"
         echo  # 换行
@@ -168,7 +168,7 @@ get_ssh_password() {
         if [[ "${SSH_PASSWORD}" == "${SSH_PASSWORD_CONFIRM}" ]]; then
             break
         else
-            echo -e "${ERROR} 两次输入的密码不一致，请重新输入"
+            echo -e "${ERROR}两次输入的密码不一致，请重新输入"
         fi
     done
 }
