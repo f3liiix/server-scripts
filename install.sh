@@ -162,13 +162,13 @@ install_tools() {
         if curl -fsSL "$RAW_BASE/$file" -o "$file" 2>/dev/null; then
             continue
         else
-            echo -e "\r${RED}[错误]${NC} 下载失败: $file ${RED}✗${NC}                   "
+            echo -e "\r${RED}[错误]${NC} 下载失败: $file ${RED}✗${NC}                    "
             return 1
         fi
     done
     
-    # 清除动态显示行
-    echo -ne "\r                                                      \r"
+    # 清除动态显示行，使用足够长的空格确保完全清除
+    echo -ne "\r                                                                                                   \r"
 
     # 设置权限
     find . -name "*.sh" -exec chmod +x {} \;
