@@ -144,6 +144,7 @@ install_tools() {
         "scripts/enable_bbr.sh"
         "scripts/configure_ssh.sh"
         "scripts/configure_dns.sh"
+        "scripts/reinstall_system.sh"
         "scripts/server_config.conf"
     )
     
@@ -217,7 +218,7 @@ run_optimization() {
     
     if [[ -x "$main_script" ]]; then
         if ! bash "$main_script" "$option"; then
-            error "优化脚本执行失败，但将继续运行"
+            log_error "优化脚本执行失败，请重试或提交 Github Issue"
             return 1
         fi
     else
