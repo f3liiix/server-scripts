@@ -224,19 +224,19 @@ run_reinstall() {
     echo "${CMD}"
     
     # 展示重装后的 SSH 登录信息
-    echo -e "\n${GREEN}📋 重装后 SSH 登录信息:${NC}"
+    echo -e "\n${CYAN}📋 重装后 SSH 登录信息:${NC}"
     echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
     echo -e "${GREEN}端口：${SSH_PORT}${NC}"
     echo -e "${GREEN}用户：root${NC}"
     echo -e "${GREEN}密码：${SSH_PASSWORD}${NC}"
     echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
-    echo
-    echo -e "\n${WARN} 重要提醒:"
+
+    echo -e "\n${WARN}⚠️ 重要提醒:"
     echo "1. 系统重装后所有数据将丢失，请提前做好数据备份"
     echo "2. 脚本执行完毕后需使用 reboot 命令重启开始重装"
     echo "3. 请确认你的服务器安全组已放行 SSH 端口 ${SSH_PORT}"
     
-    read -rp "$(echo -e "\n${CONFIRM}确认执行? (Y/n): ${YELLOW}")" confirm
+    read -rp "$(echo -e "\n${CONFIRM}${YELLOW}确认执行? (Y/n): ")" confirm
     echo -ne "${NC}"
     
     if [[ "${confirm}" =~ ^[Nn]$ ]]; then
