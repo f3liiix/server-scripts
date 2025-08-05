@@ -167,8 +167,8 @@ install_tools() {
         fi
     done
     
-    # 清除动态显示行，使用足够长的空格确保完全清除
-    echo -ne "\r                                                                                                   \r"
+    # 清除动态显示行
+    echo -ne "\r\033[K"  # 使用 ANSI 转义序列清除整行
 
     # 设置权限
     find . -name "*.sh" -exec chmod +x {} \;
