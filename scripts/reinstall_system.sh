@@ -220,7 +220,7 @@ run_reinstall() {
         CMD="${CMD} --bbr"
     fi
     
-    echo -e "\n${INFO} 将执行以下命令:"
+    echo -e "\n${INFO}ℹ️ 将执行以下命令:"
     echo "${CMD}"
     
     # 展示重装后的 SSH 登录信息
@@ -231,7 +231,7 @@ run_reinstall() {
     echo -e "${GREEN}密码：${SSH_PASSWORD}${NC}"
     echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
 
-    echo -e "\n${WARN}⚠️ 重要提醒:"
+    echo -e "\n${WARN}${YELLOW}⚠️ 重要提醒:${NC}"
     echo "1. 系统重装后所有数据将丢失，请提前做好数据备份"
     echo "2. 脚本执行完毕后需使用 reboot 命令重启开始重装"
     echo "3. 请确认你的服务器安全组已放行 SSH 端口 ${SSH_PORT}"
