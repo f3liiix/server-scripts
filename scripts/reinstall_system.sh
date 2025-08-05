@@ -243,7 +243,7 @@ run_reinstall() {
         rm -f InstallNET.sh
         return 0
     else
-        echo -e "\n${INFO}开始执行系统重装..."
+        echo -e "\n${INFO}${CYAN}开始执行系统重装...${NC}"
         eval "${CMD}"
     fi
 }
