@@ -2,7 +2,7 @@
 
 一套经过优化的bash脚本，用于提升Debian/Ubuntu服务器的网络性能和系统配置。
 
-<img src="https://img.hoofei.com/2025/08/EOkCXi.png" alt="Demo" style="max-width: 500px; height: auto;" />
+![Demo](https://img.hoofei.com/2025/08/tZ2nIt.png)
 
 ## 📋 功能特性
 
