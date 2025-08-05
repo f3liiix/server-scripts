@@ -183,7 +183,7 @@ interactive_menu() {
             echo
         fi
         
-        echo -e "${CYAN}🎉 请选择要执行的优化项目：${NC}"
+        echo -e "${CYAN}🚀 请选择要执行的优化项目：${NC}"
         echo
         echo -e "  1) 更新系统/软件包      ${GRAY}# 推荐${NC}"
         echo -e "  2) 开启BBR              ${GRAY}# 推荐${NC}"
