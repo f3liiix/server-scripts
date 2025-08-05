@@ -614,7 +614,7 @@ main() {
         case "$choice" in
             1)
                 echo
-                echo -e "${BLUE}▶▶▶ 修改SSH端口${NC}"
+                echo -e "${CYAN}▶▶▶ 修改SSH端口${NC}"
                 echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
                 local new_port
                 if ! new_port=$(input_ssh_port); then
@@ -633,7 +633,7 @@ main() {
                 ;;
             2)
                 echo
-                echo -e "${BLUE}▶▶▶ 修改用户密码${NC}"
+                echo -e "${CYAN}▶▶▶ 修改用户密码${NC}"
                 echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
                 local username
                 if ! username=$(select_user); then
@@ -651,7 +651,7 @@ main() {
                 ;;
             3)
                 echo
-                echo -e "${BLUE}▶▶▶ 同时修改端口和密码${NC}"
+                echo -e "${CYAN}▶▶▶ 同时修改端口和密码${NC}"
                 echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
                 
                 # 修改端口
@@ -696,7 +696,7 @@ main() {
                 ;;
             4)
                 echo
-                echo -e "${BLUE}▶▶▶ 查看当前SSH配置${NC}"
+                echo -e "${CYAN}▶▶▶ 查看当前SSH配置${NC}"
                 echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
                 show_current_config
                 ;;
