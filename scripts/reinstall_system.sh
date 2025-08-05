@@ -146,13 +146,31 @@ get_ssh_port() {
 
 # 获取 SSH 密码
 get_ssh_password() {
-    echo -e "\n${INFO}🔐 请输入 SSH 密码 (默认密码为 12345678): ${YELLOW}"
-    read -rsp "" SSH_PASSWORD
-    echo -ne "${NC}"
-    if [[ -z "${SSH_PASSWORD}" ]]; then
-        SSH_PASSWORD="12345678"
-    fi
-    echo  # 换行
+    while true; do
+        echo -e "\n${INFO} 请输入 SSH 密码 (默认密码为 12345678): ${YELLOW}"
+        read -rsp "" SSH_PASSWORD
+        echo -ne "${NC}"
+        
+        # 如果用户直接按回车，使用默认密码
+        if [[ -z "${SSH_PASSWORD}" ]]; then
+            SSH_PASSWORD="12345678"
+            echo  # 换行
+            break
+        fi
+        
+        echo  # 换行
+        echo -e "${INFO} 请再次输入 SSH 密码以确认: ${YELLOW}"
+        read -rsp "" SSH_PASSWORD_CONFIRM
+        echo -ne "${NC}"
+        echo  # 换行
+        
+        # 检查两次输入是否一致
+        if [[ "${SSH_PASSWORD}" == "${SSH_PASSWORD_CONFIRM}" ]]; then
+            break
+        else
+            echo -e "${ERROR} 两次输入的密码不一致，请重新输入"
+        fi
+    done
 }
 
 # 获取主机名
@@ -231,10 +249,7 @@ main() {
     select_version
     
     # 展示用户的选择
-    echo -e "\n${INFO}📋 您的选择:"
-    echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
-    echo -e "系统 : ${WHITE}${OS}${NC}"
-    echo -e "版本 : ${WHITE}${VERSION}${NC}"
+    echo -e "\n${INFO}📋 您的选择: ${WHITE}${OS} ${VERSION}${NC}"
     echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
     
     get_ssh_port
