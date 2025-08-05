@@ -27,12 +27,13 @@ check_wget() {
 # 获取用户选择的操作系统
 select_os() {
     while true; do
-        echo -e "\n${INFO} 请选择要安装的操作系统:"
+        echo -e "\n${INFO}💿 请选择要安装的操作系统:"
         echo "  1) Debian"
         echo "  2) Ubuntu"
         echo "  3) CentOS"
         echo "  4) Alpine"
-        read -rp "请选择 (1-4，默认为 1): " os_choice
+        echo
+        read -rp "$(echo -e "${YELLOW}请输入选择 (1-4，默认为 1, Debian): ${NC}")" os_choice
         
         case "${os_choice}" in
             1|'') OS="debian"; break ;;
@@ -49,59 +50,63 @@ select_version() {
     while true; do
         case "${OS}" in
             "debian")
-                echo -e "\n${INFO} 请选择 Debian 版本:"
+                echo -e "\n${INFO}请选择 Debian 版本:"
                 echo "  1) Debian 11 (bullseye)"
                 echo "  2) Debian 12 (bookworm) [默认]"
-                read -rp "请选择 (1-2，默认为 2): " ver_choice
+                echo
+                read -rp "$(echo -e "${YELLOW}请输入选择 (1-2，默认为 2, Debian 12): ${NC}")" ver_choice
                 
                 case "${ver_choice}" in
                     1) VERSION="11"; break ;;
                     ''|2) VERSION="12"; break ;;
-                    *) echo -e "${ERROR} 无效选择，请输入 1-2 之间的数字" ;;
+                    *) echo -e "${ERROR}无效选择，请输入 1-2 之间的数字" ;;
                 esac
                 ;;
             "ubuntu")
-                echo -e "\n${INFO} 请选择 Ubuntu 版本:"
+                echo -e "\n${INFO}请选择 Ubuntu 版本:"
                 echo "  1) Ubuntu 20.04 (focal)"
                 echo "  2) Ubuntu 22.04 (jammy)"
                 echo "  3) Ubuntu 24.04 (noble) [默认]"
-                read -rp "请选择 (1-3，默认为 3): " ver_choice
+                echo
+                read -rp "$(echo -e "${YELLOW}请输入选择 (1-3，默认为 3, Ubuntu 24.04): ${NC}")" ver_choice
                 
                 case "${ver_choice}" in
                     1) VERSION="20.04"; break ;;
                     2) VERSION="22.04"; break ;;
                     ''|3) VERSION="24.04"; break ;;
-                    *) echo -e "${ERROR} 无效选择，请输入 1-3 之间的数字" ;;
+                    *) echo -e "${ERROR}无效选择，请输入 1-3 之间的数字" ;;
                 esac
                 ;;
             "centos")
-                echo -e "\n${INFO} 请选择 CentOS 版本:"
+                echo -e "\n${INFO}请选择 CentOS 版本:"
                 echo "  1) CentOS 7"
                 echo "  2) CentOS 8 [默认]"
                 echo "  3) CentOS 9"
-                read -rp "请选择 (1-3，默认为 2): " ver_choice
+                echo
+                read -rp "$(echo -e "${YELLOW}请输入选择 (1-3，默认为 2, CentOS 8): ${NC}")" ver_choice
                 
                 case "${ver_choice}" in
                     1) VERSION="7"; break ;;
                     ''|2) VERSION="8"; break ;;
                     3) VERSION="9"; break ;;
-                    *) echo -e "${ERROR} 无效选择，请输入 1-3 之间的数字" ;;
+                    *) echo -e "${ERROR}无效选择，请输入 1-3 之间的数字" ;;
                 esac
                 ;;
             "alpine")
-                echo -e "\n${INFO} 请选择 Alpine 版本:"
+                echo -e "\n${INFO}请选择 Alpine 版本:"
                 echo "  1) Alpine 3.16"
                 echo "  2) Alpine 3.17"
                 echo "  3) Alpine 3.18"
                 echo "  4) Alpine edge [默认]"
-                read -rp "请选择 (1-4，默认为 4): " ver_choice
+                echo
+                read -rp "$(echo -e "${YELLOW}请输入选择 (1-4，默认为 4, Alpine edge): ${NC}")" ver_choice
                 
                 case "${ver_choice}" in
                     1) VERSION="3.16"; break ;;
                     2) VERSION="3.17"; break ;;
                     3) VERSION="3.18"; break ;;
                     ''|4) VERSION="edge"; break ;;
-                    *) echo -e "${ERROR} 无效选择，请输入 1-4 之间的数字" ;;
+                    *) echo -e "${ERROR}无效选择，请输入 1-4 之间的数字" ;;
                 esac
                 ;;
         esac
@@ -111,7 +116,8 @@ select_version() {
 # 获取 SSH 端口
 get_ssh_port() {
     while true; do
-        read -rp "$(echo -e "\n${INFO} 请输入 SSH 端口 (默认为 22): ")" port_input
+        read -rp "$(echo -e "\n${INFO}请输入 SSH 端口 (默认为 22): ${YELLOW}")" port_input
+        echo -ne "${NC}"
         
         # 如果用户直接按回车，使用默认值
         if [[ -z "${port_input}" ]]; then
@@ -122,20 +128,22 @@ get_ssh_port() {
         # 检查输入是否为数字且在有效范围内，并避免使用 80 和 443 端口
         if [[ "${port_input}" =~ ^[0-9]+$ ]] && [ "${port_input}" -ge 1 ] && [ "${port_input}" -le 65535 ]; then
             if [ "${port_input}" -eq 80 ] || [ "${port_input}" -eq 443 ]; then
-                echo -e "${ERROR} 端口 80 和 443 是常用 Web 服务端口，请选择其他端口"
+                echo -e "${ERROR}端口 80 和 443 是常用 Web 服务端口，请选择其他端口"
             else
                 SSH_PORT="${port_input}"
                 break
             fi
         else
-            echo -e "${ERROR} 端口号必须是 1-65535 之间的数字，请重新输入"
+            echo -e "${ERROR}端口号必须是 1-65535 之间的数字，请重新输入"
         fi
     done
 }
 
 # 获取 SSH 密码
 get_ssh_password() {
-    read -rsp "$(echo -e "\n${INFO} 请输入 SSH 密码 (默认密码为 12345678): ")" SSH_PASSWORD
+    echo -e "\n${INFO} 请输入 SSH 密码 (默认密码为 12345678): ${YELLOW}"
+    read -rsp "" SSH_PASSWORD
+    echo -ne "${NC}"
     if [[ -z "${SSH_PASSWORD}" ]]; then
         SSH_PASSWORD="12345678"
     fi
@@ -144,7 +152,8 @@ get_ssh_password() {
 
 # 获取主机名
 get_hostname() {
-    read -rp "$(echo -e "\n${INFO} 请输入主机名 (默认为 ${OS}): ")" CUSTOM_HOSTNAME
+    read -rp "$(echo -e "\n${INFO} 请输入主机名 (默认为 ${OS}): ${YELLOW}")" CUSTOM_HOSTNAME
+    echo -ne "${NC}"
     if [[ -z "${CUSTOM_HOSTNAME}" ]]; then
         HOSTNAME="${OS}"
     else
@@ -154,7 +163,8 @@ get_hostname() {
 
 # 是否启用 BBR
 enable_bbr_option() {
-    read -rp "$(echo -e "\n${INFO} 是否启用 BBR? (Y/n): ")" bbr_choice
+    read -rp "$(echo -e "\n${INFO} 是否启用 BBR? (Y/n): ${YELLOW}")" bbr_choice
+    echo -ne "${NC}"
     case "${bbr_choice}" in
         n|N) ENABLE_BBR=false ;;
         *) ENABLE_BBR=true ;;
@@ -196,7 +206,8 @@ run_reinstall() {
     echo "2. 脚本执行完毕后需使用 reboot 命令重启开始重装"
     echo "3. 请确认你的服务器安全组已放行 SSH 端口 ${SSH_PORT}"
     
-    read -rp "$(echo -e "\n${CONFIRM} 确认执行? (Y/n): ")" confirm
+    read -rp "$(echo -e "\n${CONFIRM} 确认执行? (Y/n): ${YELLOW}")" confirm
+    echo -ne "${NC}"
     
     if [[ "${confirm}" =~ ^[Nn]$ ]]; then
         echo -e "\n${INFO} 已取消操作"
@@ -210,10 +221,17 @@ run_reinstall() {
 
 # 主函数
 main() {
-    echo -e "\n${INFO} === 一键dd纯净系统(萌咖) ==="
     
     select_os
     select_version
+    
+    # 展示用户的选择
+    echo -e "\n${INFO} 您的选择:"
+    echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
+    echo -e "系统 : ${WHITE}${OS}${NC}"
+    echo -e "版本 : ${WHITE}${VERSION}${NC}"
+    echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
+    
     get_ssh_port
     get_ssh_password
     get_hostname
