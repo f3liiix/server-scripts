@@ -110,22 +110,11 @@ show_system_info() {
     echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
     echo -e "操作系统 : ${WHITE}$distro $version${NC}"
     echo -e "内核版本 : ${WHITE}$kernel_version${NC}"
-    echo -e "系统架构 : ${WHITE}$arch${NC}"
     echo
 }
 
 # 检查系统兼容性
-check_system() {
-    log "正在检查系统环境..."
-    
-    local system_info
-    system_info=$(detect_system)
-    local distro="${system_info%:*}"
-    local version="${system_info#*:}"
-    local kernel_version=$(uname -r)
-    
-    success "检测到系统: $distro $version，内核：$kernel_version ✅"
-    
+check_system() {  
     # 检查基本命令
     local missing_commands=()
     for cmd in curl wget; do
@@ -137,6 +126,7 @@ check_system() {
     if [[ ${#missing_commands[@]} -gt 0 ]]; then
         warn "缺少命令: ${missing_commands[*]} - 建议安装以获得更好体验 ⚠️"
     fi
+    echo
 }
 
 # 下载并安装
@@ -181,16 +171,12 @@ install_tools() {
             return 1
         fi
     done
-    
-    echo
-    echo -e "${CYAN}⚙️ 正在设置文件权限...${NC}"
-    echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+
+    echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
     
     # 设置权限
     find . -name "*.sh" -exec chmod +x {} \;
     chown -R root:root "$INSTALL_DIR" 2>/dev/null || true
-    
-    echo -e "${GREEN}✓${NC} 权限设置完成"
     echo
 }
 
@@ -212,15 +198,15 @@ initialize_system() {
     
     # 执行下载
     if ! install_tools; then
-        error "脚本初始化失败 ❌"
+        error "脚本初始化失败 ${RED}✗${NC}"
         exit 1
     fi
     
     # 验证安装
     if verify_installation; then
-        success "脚本初始化完成 ✅"
+        success "脚本初始化完成 ${GREEN}✓${NC}"
     else
-        error "脚本初始化失败 ❌"
+        error "脚本初始化失败 ${RED}✗${NC}"
         exit 1
     fi
 
@@ -271,11 +257,11 @@ interactive_menu() {
         echo -e "  ${GREEN}2${NC}) 🚀 开启BBR              ${GRAY}# 推荐${NC}"
         echo -e "  ${GREEN}3${NC}) 🌐 TCP网络调优          ${GRAY}# 推荐${NC}"
         echo -e "  ${GREEN}4${NC}) 🛜 一键网络优化         ${GRAY}# 一键运行1、2、3项${NC}"
-        echo -e "  ${DARK_GRAY}─────────────────────────────────────────────────────────────${NC}"
+        echo -e "  ${DARK_GRAY}───────────────────────────────────────────────────────────────${NC}"
         echo -e "  ${GREEN}5${NC}) 🌍 DNS服务器配置        ${GRAY}# 修改服务器DNS${NC}"
         echo -e "  ${GREEN}6${NC}) 🔐 SSH安全配置          ${GRAY}# SSH端口和密码修改${NC}"
         echo -e "  ${GREEN}7${NC}) 🚫 禁用IPv6             ${GRAY}# 避免双栈网络问题${NC}"
-        echo -e "  ${DARK_GRAY}─────────────────────────────────────────────────────────────${NC}"
+        echo -e "  ${DARK_GRAY}───────────────────────────────────────────────────────────────${NC}"
         echo -e "  ${GREEN}0${NC}) 🚪 退出脚本"
         echo
         
