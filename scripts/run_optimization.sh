@@ -3,9 +3,9 @@
 # ==============================================================================
 # Script Name: run_optimization.sh
 # Description: Simplified master script for menu-driven server optimization
-# Author:      Optimized version
-# Date:        2025-01-08
-# Version:     2.0 (Simplified)
+# Author:      f3liiix
+# Date:        2025-08-05
+# Version:     1.0.0
 # ==============================================================================
 
 # 获取脚本目录

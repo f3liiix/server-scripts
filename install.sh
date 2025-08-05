@@ -179,7 +179,7 @@ install_tools() {
         else
             echo -e "${RED}✗${NC}"
             error "下载失败: $file"
-            exit 1
+            return 1
         fi
     done
     
@@ -212,7 +212,10 @@ initialize_system() {
     log "正在初始化脚本..."
     
     # 执行下载
-    install_tools
+    if ! install_tools; then
+        error "脚本初始化失败 ❌"
+        exit 1
+    fi
     
     # 验证安装
     if verify_installation; then
