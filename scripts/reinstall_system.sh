@@ -220,7 +220,7 @@ run_reinstall() {
         CMD="${CMD} --bbr"
     fi
     
-    echo -e "\n${INFO}ℹ️ 将执行以下命令:"
+    echo -e "\n${INFO}ℹ️  将执行以下命令:"
     echo "${CMD}"
     
     # 展示重装后的 SSH 登录信息
