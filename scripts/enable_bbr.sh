@@ -468,11 +468,12 @@ verify_bbr_status() {
     
     # 检查BBR是否启用
     if check_bbr_status; then
-        log_success "✅ BBR已成功启用"
+        log_success "BBR已成功启用"
         
         # 显示详细信息
         echo
-        echo "=== BBR状态详情 ==="
+        echo -e "${GREEN}🚀 BBR状态详情${NC}"
+        echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
         echo "当前拥塞控制: $(sysctl -n net.ipv4.tcp_congestion_control 2>/dev/null || echo '未知')"
         echo "队列调度算法: $(sysctl -n net.core.default_qdisc 2>/dev/null || echo '未知')"
         echo "可用拥塞控制: $(sysctl -n net.ipv4.tcp_available_congestion_control 2>/dev/null || echo '未知')"
@@ -483,7 +484,7 @@ verify_bbr_status() {
         else
             echo "BBR模块状态: ⚠️ 未检测到模块（可能内置）"
         fi
-        echo "==================="
+        echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
         echo
         
         return 0
@@ -530,16 +531,13 @@ prompt_reboot() {
 # 主程序
 main() {
     echo
-    echo -e "${BLUE}🚀 BBR启用工具${NC}"
-    echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+    echo -e "${GREEN}🚀 BBR启用工具${NC}"
+    echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
     
     # 权限检查
     if ! check_root; then
         exit 1
     fi
-    
-    # 显示系统信息
-    show_system_info
     
     # 检查虚拟化环境
     if ! check_virtualization; then

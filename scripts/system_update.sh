@@ -207,7 +207,7 @@ check_reboot_required() {
 # 主程序
 main() {
     echo
-    echo -e "${CYAN}🔄 系统更新工具${NC}"
+    echo -e "${GREEN}🔄 系统更新工具${NC}"
     echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
     
     # 检查root权限

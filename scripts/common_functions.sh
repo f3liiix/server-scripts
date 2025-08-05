@@ -63,7 +63,7 @@ fi
 log_info() {
     local message="$1"
     local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-    echo -e "${CYAN}ℹ️ [信息]${NC} $message"
+    echo -e "${CYAN}ℹ️  [信息]${NC} $message"
     echo "[$timestamp] [INFO] $message" >> "$LOG_FILE" 2>/dev/null || true
 }
 
@@ -376,11 +376,10 @@ is_service_running() {
 
 # 获取系统基本信息
 get_system_info() {
-    echo "=== 系统信息 ==="
-    echo "操作系统: $(get_system_distro) $(get_system_version)"
-    echo "内核版本: $(get_kernel_version)"
-    echo "系统架构: $(get_system_arch) ($(get_system_bits)位)"
-    echo "================"
+    echo -e "${CYAN}🖥️  系统信息${NC}"
+    echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
+    echo -e "操作系统 : ${WHITE}$distro $version${NC}"
+    echo -e "内核版本 : ${WHITE}$kernel_version${NC}"
 }
 
 # 显示系统信息 (get_system_info的别名，保持兼容性)
