@@ -165,7 +165,7 @@ cleanup_system() {
 show_update_summary() {
     local pkg_manager="$1"
     
-    echo "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
+    echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
     log_success "软件包列表已更新"
     log_success "系统软件包已升级"
     log_success "系统缓存已经清理"
@@ -173,7 +173,7 @@ show_update_summary() {
     # 检查是否需要重启
     check_reboot_required "$pkg_manager"
     
-    echo "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
+    echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
 }
 
 # 检查是否需要重启

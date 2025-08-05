@@ -91,7 +91,7 @@ log_error() {
 log_step() {
     local message="$1"
     local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-    echo -e "${CYAN}➡️ [步骤]${NC} $message"
+    echo -e "${CYAN}➡️  [步骤]${NC} $message"
     echo "[$timestamp] [STEP] $message" >> "$LOG_FILE" 2>/dev/null || true
 }
 
