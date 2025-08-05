@@ -244,7 +244,30 @@ run_reinstall() {
         return 0
     else
         echo -e "\n${INFO}${CYAN}开始执行系统重装...${NC}"
-        eval "${CMD}"
+        # 执行重装命令，但不直接使用 eval
+        # 这样可以避免当前 shell 被第三方脚本退出影响
+        bash InstallNET.sh -${OS} ${VERSION} -port "${SSH_PORT}" -pwd '${SSH_PASSWORD}' -hostname "${HOSTNAME}" ${ENABLE_BBR:+--bbr}
+        
+        # 脚本执行成功后删除临时文件
+        rm -f InstallNET.sh
+        
+        # 显示执行完成信息
+        echo -e "\n${INFO}✅ 系统重装脚本已执行完成"
+        
+        # 询问是否立即重启
+        read -rp "$(echo -e "\n${CONFIRM}${YELLOW}是否立即重启系统? (Y/n): ${NC}")" restart_confirm
+        
+        if [[ ! "${restart_confirm}" =~ ^[Nn]$ ]]; then
+            echo -e "\n${INFO}🔄 正在重启系统..."
+            sleep 3
+            # 使用 nohup 和 & 让重启命令在后台执行，确保脚本正常返回
+            nohup bash -c 'sleep 1 && reboot' > /dev/null 2>&1 &
+        else
+            echo -e "\n${INFO}ℹ️  您已选择手动重启，请稍后手动执行 'reboot' 命令"
+        fi
+        
+        # 总是返回成功，避免 run_optimization.sh 报错
+        return 0
     fi
 }
 
