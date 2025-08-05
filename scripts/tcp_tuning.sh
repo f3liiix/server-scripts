@@ -262,10 +262,8 @@ apply_tcp_optimization() {
     fi
     
     # 添加TCP优化配置
-    cat >> "$SYSCTL_CONF" << 'EOF' 2>/dev/null || {
-        log_error "无法写入TCP优化配置到 $SYSCTL_CONF"
-        return 1
-    }
+    {
+        cat << 'EOF'
 
 # ===== TCP网络调优 v1.0.0 =====
 # 连接队列优化
@@ -302,23 +300,25 @@ net.ipv4.tcp_timestamps = 1
 # 内存压力处理
 net.ipv4.tcp_mem = 786432 1048576 1572864
 EOF
+    } >> "$SYSCTL_CONF" 2>/dev/null || {
+        log_error "无法写入TCP优化配置到 $SYSCTL_CONF"
+        return 1
+    }
 
     # 条件性添加BBR配置
     if check_bbr_availability; then
-        echo "# BBR拥塞控制算法" >> "$SYSCTL_CONF" 2>/dev/null || {
-            log_error "无法写入BBR配置到 $SYSCTL_CONF"
-            return 1
-        }
-        echo "net.ipv4.tcp_congestion_control = bbr" >> "$SYSCTL_CONF" 2>/dev/null || {
+        {
+            echo "# BBR拥塞控制算法"
+            echo "net.ipv4.tcp_congestion_control = bbr"
+        } >> "$SYSCTL_CONF" 2>/dev/null || {
             log_error "无法写入BBR配置到 $SYSCTL_CONF"
             return 1
         }
     else
-        echo "# 使用默认拥塞控制算法 (BBR不可用)" >> "$SYSCTL_CONF" 2>/dev/null || {
-            log_error "无法写入默认配置到 $SYSCTL_CONF"
-            return 1
-        }
-        echo "# net.ipv4.tcp_congestion_control = cubic" >> "$SYSCTL_CONF" 2>/dev/null || {
+        {
+            echo "# 使用默认拥塞控制算法 (BBR不可用)"
+            echo "# net.ipv4.tcp_congestion_control = cubic"
+        } >> "$SYSCTL_CONF" 2>/dev/null || {
             log_error "无法写入默认配置到 $SYSCTL_CONF"
             return 1
         }
@@ -343,15 +343,13 @@ apply_ulimit_optimization() {
     log_step "应用文件描述符限制优化..."
     
     # 检查是否已存在配置
-    if grep -q "文件描述符限制 (auto-configured)" "$LIMITS_CONF" 2>/dev/null; then
+    if grep -q "文件描述符限制 v1.0.0" "$LIMITS_CONF" 2>/dev/null; then
         log_warning "检测到已存在的文件描述符配置，将跳过重复配置"
         return 0
     fi
     
-    cat >> "$LIMITS_CONF" << 'EOF' 2>/dev/null || {
-        log_error "无法写入文件描述符限制配置到 $LIMITS_CONF"
-        return 1
-    }
+    {
+        cat << 'EOF'
 
 # ===== 文件描述符限制 v1.0.0 =====
 * soft nofile 1048576
@@ -366,6 +364,10 @@ root soft nproc 65536
 root hard nproc 65536
 # ================================================
 EOF
+    } >> "$LIMITS_CONF" 2>/dev/null || {
+        log_error "无法写入文件描述符限制配置到 $LIMITS_CONF"
+        return 1
+    }
     
     log_success "文件描述符限制配置已添加"
 }
