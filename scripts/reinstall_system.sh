@@ -236,8 +236,7 @@ run_reinstall() {
     echo "2. 脚本执行完毕后需使用 reboot 命令重启开始重装"
     echo "3. 请确认你的服务器安全组已放行 SSH 端口 ${SSH_PORT}"
     
-    read -rp "$(echo -e "\n${CONFIRM}${YELLOW}确认执行? (Y/n): ")" confirm
-    echo -ne "${NC}"
+    read -rp "$(echo -e "\n${CONFIRM}${YELLOW}确认执行? (Y/n): ${NC}")" confirm
     
     if [[ "${confirm}" =~ ^[Nn]$ ]]; then
         echo -e "\n${INFO}已取消操作"
