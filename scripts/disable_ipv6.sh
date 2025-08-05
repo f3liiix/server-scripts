@@ -171,18 +171,18 @@ verify_ipv6_disabled() {
     log_info "正在验证IPv6状态..."
     
     if is_ipv6_disabled; then
-        log_success "✅ IPv6已成功禁用"
+        log_success "IPv6已成功禁用"
         
         # 显示详细状态
         echo
-        echo "=== IPv6 状态详情 ==="
+        echo -e "${GREEN}IPv6 状态详情${NC}"
+        echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
         if command -v sysctl >/dev/null 2>&1; then
             sysctl net.ipv6.conf.all.disable_ipv6 2>/dev/null || true
             sysctl net.ipv6.conf.default.disable_ipv6 2>/dev/null || true
             sysctl net.ipv6.conf.lo.disable_ipv6 2>/dev/null || true
         fi
-        echo "====================="
-        echo
+        echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
         
         return 0
     else
