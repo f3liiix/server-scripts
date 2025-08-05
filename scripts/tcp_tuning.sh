@@ -463,7 +463,6 @@ configure_firewall() {
 
 # 显示优化结果
 show_optimization_results() {
-    log_step "显示优化结果..."
     
     echo
     echo -e "${GREEN}🌐 TCP优化配置完成${NC}"

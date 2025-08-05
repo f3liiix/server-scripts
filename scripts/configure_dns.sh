@@ -591,7 +591,8 @@ show_main_menu() {
     echo "5) 自定义DNS服务器"
     echo "6) 恢复DNS配置备份"
     echo "0) 退出DNS配置工具"
-    echo "================================================="
+    echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
+    echo
 }
 
 # 显示当前配置（简化版）
@@ -630,7 +631,6 @@ configure_preset_dns() {
     description=$(get_dns_description "$preset")
     
     echo
-    echo "=== 配置 $description ==="
     echo "DNS服务器: $dns_servers"
     echo
     
@@ -638,6 +638,8 @@ configure_preset_dns() {
         log_error "DNS服务器测试失败，配置已取消"
         return 1
     fi
+    
+    echo 
     
     if confirm_action "确定要配置以上DNS服务器吗？" "Y"; then
         backup_dns_config
@@ -737,8 +739,8 @@ restore_dns_backup() {
 main() {
     # 只保留交互式菜单
     echo
-    echo -e "${BLUE}🌍 DNS配置工具${NC}"
-    echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+    echo -e "${GREEN}🌍 DNS配置工具${NC}"
+    echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
     
     while true; do
         show_main_menu
@@ -749,48 +751,48 @@ main() {
         case "$choice" in
             1)
                 echo
-                echo -e "${BLUE}▶▶▶ 配置 Cloudflare DNS${NC}"
-                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+                echo -e "${GREEN}▶▶▶ 配置 Cloudflare DNS${NC}"
+                echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
                 if ! configure_preset_dns "cloudflare"; then
                     log_error "Cloudflare DNS配置失败"
                 fi
                 ;;
             2)
                 echo
-                echo -e "${BLUE}▶▶▶ 配置 Google DNS${NC}"
-                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+                echo -e "${GREEN}▶▶▶ 配置 Google DNS${NC}"
+                echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
                 if ! configure_preset_dns "google"; then
                     log_error "Google DNS配置失败"
                 fi
                 ;;
             3)
                 echo
-                echo -e "${BLUE}▶▶▶ 配置 阿里DNS${NC}"
-                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+                echo -e "${GREEN}▶▶▶ 配置 阿里DNS${NC}"
+                echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
                 if ! configure_preset_dns "ali"; then
                     log_error "阿里DNS配置失败"
                 fi
                 ;;
             4)
                 echo
-                echo -e "${BLUE}▶▶▶ 配置 腾讯DNS${NC}"
-                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+                echo -e "${GREEN}▶▶▶ 配置 腾讯DNS${NC}"
+                echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
                 if ! configure_preset_dns "tencent"; then
                     log_error "腾讯DNS配置失败"
                 fi
                 ;;
             5)
                 echo
-                echo -e "${BLUE}▶▶▶ 配置 自定义DNS服务器${NC}"
-                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+                echo -e "${GREEN}▶▶▶ 配置 自定义DNS服务器${NC}"
+                echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
                 if ! configure_custom_dns; then
                     log_error "自定义DNS配置失败"
                 fi
                 ;;
             6)
                 echo
-                echo -e "${BLUE}▶▶▶ 恢复DNS配置备份${NC}"
-                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+                echo -e "${GREEN}▶▶▶ 恢复DNS配置备份${NC}"
+                echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
                 if ! restore_dns_backup; then
                     log_error "DNS备份恢复失败"
                 fi

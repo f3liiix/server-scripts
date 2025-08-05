@@ -119,7 +119,7 @@ run_all_scripts() {
     
     # 总结结果
     echo
-    echo -e "${BLUE}📋 执行总结${NC}"
+    echo -e "${CYAN}📋 执行总结${NC}"
     echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
     if [[ ${#failed_scripts[@]} -eq 0 ]]; then
         log_success "所有脚本执行成功！"
@@ -175,7 +175,7 @@ main() {
         
         # 总结结果
         echo
-        echo -e "${BLUE}📋 执行总结${NC}"
+        echo -e "${CYAN}📋 执行总结${NC}"
         echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
         if [[ ${#failed_scripts[@]} -eq 0 ]]; then
             log_success "一键网络优化执行成功！"
