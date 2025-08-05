@@ -58,8 +58,7 @@ readonly DNS_TEST_TIMEOUT=10
 
 # 检测DNS管理方式
 detect_dns_manager() {
-    log_step "检测DNS管理方式..."
-    
+
     local manager=""
     
     # 检查systemd-resolved
@@ -640,7 +639,7 @@ configure_preset_dns() {
     fi
     
     echo 
-    
+
     if confirm_action "确定要配置以上DNS服务器吗？" "Y"; then
         backup_dns_config
         
