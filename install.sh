@@ -248,18 +248,18 @@ interactive_menu() {
             show_system_info
         fi
         
-        echo -e "${GREEN}🛠️  功能菜单${NC}"
+        echo -e "${CYAN}🛠️  功能菜单${NC}"
         echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
-        echo -e "  ${GREEN}1${NC}) 🔄 更新系统/软件包      ${GRAY}# 推荐${NC}"
-        echo -e "  ${GREEN}2${NC}) 🚀 开启BBR              ${GRAY}# 推荐${NC}"
-        echo -e "  ${GREEN}3${NC}) 🌐 TCP网络调优          ${GRAY}# 推荐${NC}"
-        echo -e "  ${GREEN}4${NC}) 🛜 一键网络优化          ${GRAY}# 一键运行1、2、3项${NC}"
+        echo -e "  ${CYAN}1${NC} ▶ 🔄 更新系统/软件包      ${GRAY}# 推荐${NC}"
+        echo -e "  ${CYAN}2${NC} ▶ 🚀 开启BBR              ${GRAY}# 推荐${NC}"
+        echo -e "  ${CYAN}3${NC} ▶ 🌐 TCP网络调优          ${GRAY}# 推荐${NC}"
+        echo -e "  ${CYAN}4${NC} ▶ 🛜 一键网络优化          ${GRAY}# 一键运行1、2、3项${NC}"
         echo -e "  ${DARK_GRAY}───────────────────────────────────────────────────────────────${NC}"
-        echo -e "  ${GREEN}5${NC}) 🌍 DNS服务器配置        ${GRAY}# 修改服务器DNS${NC}"
-        echo -e "  ${GREEN}6${NC}) 🔐 SSH安全配置          ${GRAY}# SSH端口和密码修改${NC}"
-        echo -e "  ${GREEN}7${NC}) 🚫 禁用IPv6             ${GRAY}# 避免双栈网络问题${NC}"
+        echo -e "  ${CYAN}5${NC} ▶ 🌍 DNS服务器配置        ${GRAY}# 修改服务器DNS${NC}"
+        echo -e "  ${CYAN}6${NC} ▶ 🔐 SSH安全配置          ${GRAY}# SSH端口和密码修改${NC}"
+        echo -e "  ${CYAN}7${NC} ▶ 🚫 禁用IPv6             ${GRAY}# 避免双栈网络问题${NC}"
         echo -e "  ${DARK_GRAY}───────────────────────────────────────────────────────────────${NC}"
-        echo -e "  ${GREEN}0${NC}) 🚪 退出脚本"
+        echo -e "  ${CYAN}0${NC} ▶ 🚪 退出脚本"
         echo
         
         read -p "$(echo -e "${YELLOW}请输入选择 (0-7): ${NC}")" choice
@@ -268,43 +268,36 @@ interactive_menu() {
             1)
                 echo
                 echo -e "${CYAN}▶▶▶ 正在执行 [更新系统及软件包]${NC}"
-                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 run_optimization "update"
                 ;;
             2)
                 echo
                 echo -e "${CYAN}▶▶▶ 正在执行 [一键开启BBR]${NC}"
-                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 run_optimization "bbr"
                 ;;
             3)
                 echo
                 echo -e "${CYAN}▶▶▶ 正在执行 [TCP网络调优]${NC}"
-                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 run_optimization "tcp"
                 ;;
             4)
                 echo
                 echo -e "${CYAN}▶▶▶ 正在执行 [基础优化套餐]${NC}"
-                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 run_optimization "basic"
                 ;;
             5)
                 echo
                 echo -e "${CYAN}▶▶▶ 正在执行 [DNS服务器配置]${NC}"
-                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 run_optimization "dns"
                 ;;
             6)
                 echo
                 echo -e "${CYAN}▶▶▶ 正在执行 [SSH安全配置]${NC}"
-                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 run_optimization "ssh"
                 ;;
             7)
                 echo
                 echo -e "${CYAN}▶▶▶ 正在执行 [禁用IPv6]${NC}"
-                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 run_optimization "ipv6"
                 ;;
             0)

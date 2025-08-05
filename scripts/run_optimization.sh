@@ -80,9 +80,8 @@ run_script() {
     if ! check_script "$script_key"; then
         return 1
     fi
-    
-    echo -e "${BLUE}▶▶▶ 执行脚本: ${WHITE}$script_file${NC}"
-    echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+
+    echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
     
     if ! bash "$script_path"; then
         log_error "$script_key 脚本执行失败"
