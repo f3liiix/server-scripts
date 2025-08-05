@@ -308,6 +308,11 @@ interactive_menu() {
                 echo
                 echo -e "${CYAN}▶▶▶ 正在执行 [一键dd纯净系统(萌咖)]${NC}"
                 run_optimization "reinstall"
+                # 重装系统脚本执行后会重启系统，不需要返回主菜单
+                echo
+                echo -e "${GREEN}👋 系统重装脚本已执行，即将重启系统...${NC}"
+                echo
+                exit 0
                 ;;
             0)
                 echo

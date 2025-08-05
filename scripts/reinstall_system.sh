@@ -258,7 +258,6 @@ run_reinstall() {
         read -rp "$(echo -e "\n${CONFIRM}${YELLOW}是否立即重启系统? (Y/n): ${NC}")" restart_confirm
         
         if [[ ! "${restart_confirm}" =~ ^[Nn]$ ]]; then
-            echo -e "\n${INFO}🔄 正在重启系统..."
             sleep 3
             # 使用 nohup 和 & 让重启命令在后台执行，确保脚本正常返回
             nohup bash -c 'sleep 1 && reboot' > /dev/null 2>&1 &
