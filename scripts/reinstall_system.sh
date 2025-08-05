@@ -252,7 +252,7 @@ run_reinstall() {
         rm -f InstallNET.sh
         
         # 显示执行完成信息
-        echo -e "\n${INFO}✅ 系统重装脚本已执行完成"
+        echo -e "\n${INFO}✅ 系统重装脚本已执行完成（重启后需等待新系统安装完成才可连接SSH，大约 5-10 分钟）"
         
         # 询问是否立即重启
         read -rp "$(echo -e "\n${CONFIRM}${YELLOW}是否立即重启系统? (Y/n): ${NC}")" restart_confirm
