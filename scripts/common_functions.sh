@@ -63,7 +63,7 @@ fi
 log_info() {
     local message="$1"
     local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-    echo -e "${BLUE}ℹ️  [信息]${NC} $message"
+    echo -e "${CYAN}ℹ️  [信息]${NC} $message"
     echo "[$timestamp] [INFO] $message" >> "$LOG_FILE" 2>/dev/null || true
 }
 

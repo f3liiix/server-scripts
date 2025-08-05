@@ -28,7 +28,7 @@ readonly NC='\033[0m'
 
 # 日志函数
 log() { 
-    echo -e "${BLUE}[信息]${NC} $1"
+    echo -e "${CYAN}[信息]${NC} $1"
 }
 
 success() { 
@@ -84,7 +84,7 @@ detect_system() {
 # 显示欢迎界面
 show_welcome() {
     clear
-    echo -e "${CYAN}"
+    echo -e "${GREEN}"
     echo "███████╗███████╗   ██╗  ██╗██╗██████╗ ███████╗   ███████╗███████╗" 
     echo "██╔════╝██╔════╝   ██║  ██║██║██╔══██╗██╔════╝   ██╔════╝██╔════╝"
     echo "███████╗███████╗   ███████║██║██║  ██║█████╗     ███████╗███████╗"    
@@ -92,8 +92,7 @@ show_welcome() {
     echo "███████║███████║██╗██║  ██║██║██████╔╝███████╗██╗███████║███████║"
     echo "╚══════╝╚══════╝╚═╝╚═╝  ╚═╝╚═╝╚═════╝ ╚══════╝╚═╝╚══════╝╚══════╝"   
     echo "═════════════════════════════════════════════════════════════════"
-    echo "                  服务器优化工具合集 - v$VERSION                    "
-    echo "                  bash <(curl -sL ss.hide.ss)                    "
+    echo "         服务器优化工具合集 - bash <(curl -sL ss.hide.ss)           "
     echo -e "${NC}"
     echo
 }
@@ -107,8 +106,8 @@ show_system_info() {
     local kernel_version=$(uname -r)
     local arch=$(uname -m)
     
-    echo -e "${BLUE}🖥️  系统信息${NC}"
-    echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+    echo -e "${CYAN}🖥️  系统信息${NC}"
+    echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
     echo -e "操作系统 : ${WHITE}$distro $version${NC}"
     echo -e "内核版本 : ${WHITE}$kernel_version${NC}"
     echo -e "系统架构 : ${WHITE}$arch${NC}"
@@ -142,8 +141,8 @@ check_system() {
 
 # 下载并安装
 install_tools() {
-    echo -e "${BLUE}📥 正在下载所需文件...${NC}"
-    echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+    echo -e "${CYAN}📥 正在下载所需文件...${NC}"
+    echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
     
     # 创建安装目录
     mkdir -p "$INSTALL_DIR"
@@ -184,7 +183,7 @@ install_tools() {
     done
     
     echo
-    echo -e "${BLUE}🔧 正在设置文件权限...${NC}"
+    echo -e "${CYAN}⚙️ 正在设置文件权限...${NC}"
     echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
     
     # 设置权限
@@ -260,24 +259,23 @@ interactive_menu() {
             echo "███████║███████║██╗██║  ██║██║██████╔╝███████╗██╗███████║███████║"
             echo "╚══════╝╚══════╝╚═╝╚═╝  ╚═╝╚═╝╚═════╝ ╚══════╝╚═╝╚══════╝╚══════╝"   
             echo "═════════════════════════════════════════════════════════════════"
-            echo "                  服务器优化工具合集 - v$VERSION                    "
-            echo "                  bash <(curl -sL ss.hide.ss)                    "
+            echo "         服务器优化工具合集 - bash <(curl -sL ss.hide.ss)           "
             echo -e "${NC}"
             echo
             show_system_info
         fi
         
-        echo -e "${BLUE}🛠️  功能菜单${NC}"
-        echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+        echo -e "${CYAN}🛠️  功能菜单${NC}"
+        echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
         echo -e "  ${GREEN}1${NC}) 🔄 更新系统/软件包      ${GRAY}# 推荐${NC}"
         echo -e "  ${GREEN}2${NC}) 🚀 开启BBR              ${GRAY}# 推荐${NC}"
         echo -e "  ${GREEN}3${NC}) 🌐 TCP网络调优          ${GRAY}# 推荐${NC}"
-        echo -e "  ${GREEN}4${NC}) ⚡ 一键网络优化         ${GRAY}# 一键运行1、2、3项${NC}"
-        echo -e "  ${DARK_GRAY}────────────────────────────────────────${NC}"
+        echo -e "  ${GREEN}4${NC}) 🛜 一键网络优化         ${GRAY}# 一键运行1、2、3项${NC}"
+        echo -e "  ${DARK_GRAY}─────────────────────────────────────────────────────────────${NC}"
         echo -e "  ${GREEN}5${NC}) 🌍 DNS服务器配置        ${GRAY}# 修改服务器DNS${NC}"
         echo -e "  ${GREEN}6${NC}) 🔐 SSH安全配置          ${GRAY}# SSH端口和密码修改${NC}"
         echo -e "  ${GREEN}7${NC}) 🚫 禁用IPv6             ${GRAY}# 避免双栈网络问题${NC}"
-        echo -e "  ${DARK_GRAY}────────────────────────────────────────${NC}"
+        echo -e "  ${DARK_GRAY}─────────────────────────────────────────────────────────────${NC}"
         echo -e "  ${GREEN}0${NC}) 🚪 退出脚本"
         echo
         
@@ -286,43 +284,43 @@ interactive_menu() {
         case $choice in
             1)
                 echo
-                echo -e "${BLUE}▶▶▶ 正在执行 [更新系统及软件包]${NC}"
+                echo -e "${CYAN}▶▶▶ 正在执行 [更新系统及软件包]${NC}"
                 echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 run_optimization "update"
                 ;;
             2)
                 echo
-                echo -e "${BLUE}▶▶▶ 正在执行 [一键开启BBR]${NC}"
+                echo -e "${CYAN}▶▶▶ 正在执行 [一键开启BBR]${NC}"
                 echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 run_optimization "bbr"
                 ;;
             3)
                 echo
-                echo -e "${BLUE}▶▶▶ 正在执行 [TCP网络调优]${NC}"
+                echo -e "${CYAN}▶▶▶ 正在执行 [TCP网络调优]${NC}"
                 echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 run_optimization "tcp"
                 ;;
             4)
                 echo
-                echo -e "${BLUE}▶▶▶ 正在执行 [基础优化套餐]${NC}"
+                echo -e "${CYAN}▶▶▶ 正在执行 [基础优化套餐]${NC}"
                 echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 run_optimization "basic"
                 ;;
             5)
                 echo
-                echo -e "${BLUE}▶▶▶ 正在执行 [DNS服务器配置]${NC}"
+                echo -e "${CYAN}▶▶▶ 正在执行 [DNS服务器配置]${NC}"
                 echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 run_optimization "dns"
                 ;;
             6)
                 echo
-                echo -e "${BLUE}▶▶▶ 正在执行 [SSH安全配置]${NC}"
+                echo -e "${CYAN}▶▶▶ 正在执行 [SSH安全配置]${NC}"
                 echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 run_optimization "ssh"
                 ;;
             7)
                 echo
-                echo -e "${BLUE}▶▶▶ 正在执行 [禁用IPv6]${NC}"
+                echo -e "${CYAN}▶▶▶ 正在执行 [禁用IPv6]${NC}"
                 echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 run_optimization "ipv6"
                 ;;
