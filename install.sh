@@ -254,7 +254,7 @@ interactive_menu() {
         echo -e "  ${CYAN}1${NC} ▶ 🔄 更新系统/软件包      ${GRAY}# 推荐${NC}"
         echo -e "  ${CYAN}2${NC} ▶ 🚀 开启BBR              ${GRAY}# 推荐${NC}"
         echo -e "  ${CYAN}3${NC} ▶ 🌐 TCP网络调优          ${GRAY}# 推荐${NC}"
-        echo -e "  ${CYAN}4${NC} ▶ 🛜 一键网络优化          ${GRAY}# 一键运行1、2、3项${NC}"
+        echo -e "  ${CYAN}4${NC} ▶ 🛜  一键网络优化         ${GRAY}# 一键运行1、2、3项${NC}"
         echo -e "  ${DARK_GRAY}───────────────────────────────────────────────────────────────${NC}"
         echo -e "  ${CYAN}5${NC} ▶ 🌍 DNS服务器配置        ${GRAY}# 修改服务器DNS${NC}"
         echo -e "  ${CYAN}6${NC} ▶ 🔐 SSH安全配置          ${GRAY}# SSH端口和密码修改${NC}"

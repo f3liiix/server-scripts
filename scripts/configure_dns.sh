@@ -80,7 +80,7 @@ detect_dns_manager() {
         manager="direct"
     fi
     
-    log_info "检测到DNS管理方式: $manager"
+    echo "$manager"
 }
 
 # 获取当前DNS配置
