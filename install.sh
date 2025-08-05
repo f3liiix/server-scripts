@@ -21,14 +21,31 @@ readonly YELLOW='\033[1;33m'
 readonly BLUE='\033[0;34m'
 readonly CYAN='\033[0;36m'
 readonly WHITE='\033[1;37m'
+readonly MAGENTA='\033[0;35m'
 readonly GRAY='\033[0;37m'
+readonly DARK_GRAY='\033[1;30m'
 readonly NC='\033[0m'
 
 # 日志函数
-log() { echo -e "${BLUE}[信息]${NC} $1"; }
-success() { echo -e "${GREEN}[成功]${NC} $1"; }
-warn() { echo -e "${YELLOW}[注意]${NC} $1"; }
-error() { echo -e "${RED}[错误]${NC} $1" >&2; }
+log() { 
+    echo -e "${BLUE}[信息]${NC} $1"
+}
+
+success() { 
+    echo -e "${GREEN}[成功]${NC} $1"
+}
+
+warn() { 
+    echo -e "${YELLOW}[注意]${NC} $1"
+}
+
+error() { 
+    echo -e "${RED}[错误]${NC} $1" >&2
+}
+
+info() {
+    echo -e "${CYAN}[信息]${NC} $1"
+}
 
 # 检查root权限
 check_root() {
@@ -64,6 +81,40 @@ detect_system() {
     echo "$distro:$version"
 }
 
+# 显示欢迎界面
+show_welcome() {
+    clear
+    echo -e "${CYAN}"
+    echo "███████╗███████╗   ██╗  ██╗██╗██████╗ ███████╗   ███████╗███████╗" 
+    echo "██╔════╝██╔════╝   ██║  ██║██║██╔══██╗██╔════╝   ██╔════╝██╔════╝"
+    echo "███████╗███████╗   ███████║██║██║  ██║█████╗     ███████╗███████╗"    
+    echo "╚════██║╚════██║   ██╔══██║██║██║  ██║██╔══╝     ╚════██║╚════██║"   
+    echo "███████║███████║██╗██║  ██║██║██████╔╝███████╗██╗███████║███████║"
+    echo "╚══════╝╚══════╝╚═╝╚═╝  ╚═╝╚═╝╚═════╝ ╚══════╝╚═╝╚══════╝╚══════╝"   
+    echo "═════════════════════════════════════════════════════════════════"
+    echo "                  服务器优化工具合集 - v$VERSION                    "
+    echo "                  bash <(curl -sL ss.hide.ss)                    "
+    echo -e "${NC}"
+    echo
+}
+
+# 显示系统信息
+show_system_info() {
+    local system_info
+    system_info=$(detect_system)
+    local distro="${system_info%:*}"
+    local version="${system_info#*:}"
+    local kernel_version=$(uname -r)
+    local arch=$(uname -m)
+    
+    echo -e "${BLUE}🖥️  系统信息${NC}"
+    echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+    echo -e "操作系统 : ${WHITE}$distro $version${NC}"
+    echo -e "内核版本 : ${WHITE}$kernel_version${NC}"
+    echo -e "系统架构 : ${WHITE}$arch${NC}"
+    echo
+}
+
 # 检查系统兼容性
 check_system() {
     log "正在检查系统环境..."
@@ -91,6 +142,9 @@ check_system() {
 
 # 下载并安装
 install_tools() {
+    echo -e "${BLUE}📥 正在下载所需文件...${NC}"
+    echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+    
     # 创建安装目录
     mkdir -p "$INSTALL_DIR"
     cd "$INSTALL_DIR"
@@ -105,22 +159,40 @@ install_tools() {
         "scripts/enable_bbr.sh"
         "scripts/configure_ssh.sh"
         "scripts/configure_dns.sh"
+        "scripts/server_config.conf"
     )
     
+    local total_files=${#files[@]}
+    local current=0
+    
     for file in "${files[@]}"; do
+        ((current++))
         local dir=$(dirname "$file")
         mkdir -p "$dir"
         
+        # 显示进度
+        echo -ne "${CYAN}[${current}/${total_files}]${NC} 正在下载 ${WHITE}$file${NC} ... "
+        
         # 静默下载，只在失败时输出错误
-        if ! curl -fsSL "$RAW_BASE/$file" -o "$file" 2>/dev/null; then
-            error "❌ 下载失败: $file"
+        if curl -fsSL "$RAW_BASE/$file" -o "$file" 2>/dev/null; then
+            echo -e "${GREEN}✓${NC}"
+        else
+            echo -e "${RED}✗${NC}"
+            error "下载失败: $file"
             exit 1
         fi
     done
     
+    echo
+    echo -e "${BLUE}🔧 正在设置文件权限...${NC}"
+    echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+    
     # 设置权限
     find . -name "*.sh" -exec chmod +x {} \;
     chown -R root:root "$INSTALL_DIR" 2>/dev/null || true
+    
+    echo -e "${GREEN}✓${NC} 权限设置完成"
+    echo
 }
 
 # 验证安装
@@ -176,32 +248,43 @@ interactive_menu() {
     while true; do
         # 根据参数决定是否显示标题框
         if [[ "$show_header" == "true" ]]; then
-            echo -e "${GREEN}╔═════════════════════════════════════════════════╗${NC}"
-            echo -e "${GREEN}║          服务器优化工具集合 - v$VERSION            ║${NC}"
-            echo -e "${GREEN}║          bash <(curl -sL ss.hide.ss)            ║${NC}"
-            echo -e "${GREEN}╚═════════════════════════════════════════════════╝${NC}"
+            clear
+            echo -e "${CYAN}"
+            echo "███████╗███████╗   ██╗  ██╗██╗██████╗ ███████╗   ███████╗███████╗" 
+            echo "██╔════╝██╔════╝   ██║  ██║██║██╔══██╗██╔════╝   ██╔════╝██╔════╝"
+            echo "███████╗███████╗   ███████║██║██║  ██║█████╗     ███████╗███████╗"    
+            echo "╚════██║╚════██║   ██╔══██║██║██║  ██║██╔══╝     ╚════██║╚════██║"   
+            echo "███████║███████║██╗██║  ██║██║██████╔╝███████╗██╗███████║███████║"
+            echo "╚══════╝╚══════╝╚═╝╚═╝  ╚═╝╚═╝╚═════╝ ╚══════╝╚═╝╚══════╝╚══════╝"   
+            echo "═════════════════════════════════════════════════════════════════"
+            echo "                  服务器优化工具合集 - v$VERSION                    "
+            echo "                  bash <(curl -sL ss.hide.ss)                    "
+            echo -e "${NC}"
             echo
+            show_system_info
         fi
         
-        echo -e "${CYAN}🚀 请选择要执行的优化项目：${NC}"
-        echo
-        echo -e "  1) 更新系统/软件包      ${GRAY}# 推荐${NC}"
-        echo -e "  2) 开启BBR              ${GRAY}# 推荐${NC}"
-        echo -e "  3) TCP网络调优          ${GRAY}# 推荐${NC}"
-        echo -e "  4) 一键网络优化         ${GRAY}# 一键运行1、2、3项${NC}"
-        echo -e "  ------------------------------------------------"
-        echo -e "  5) DNS服务器配置        ${GRAY}# 修改服务器DNS${NC}"
-        echo -e "  6) SSH安全配置          ${GRAY}# SSH端口和密码修改${NC}"
-        echo -e "  7) 禁用IPv6             ${GRAY}# 避免双栈网络问题${NC}"
-        echo -e "  ------------------------------------------------"
-        echo -e "  0) 退出脚本"
+        echo -e "${BLUE}🛠️  功能菜单${NC}"
+        echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+        echo -e "  ${GREEN}1${NC}) 🔄 更新系统/软件包      ${GRAY}# 推荐${NC}"
+        echo -e "  ${GREEN}2${NC}) 🚀 开启BBR              ${GRAY}# 推荐${NC}"
+        echo -e "  ${GREEN}3${NC}) 🌐 TCP网络调优          ${GRAY}# 推荐${NC}"
+        echo -e "  ${GREEN}4${NC}) ⚡ 一键网络优化         ${GRAY}# 一键运行1、2、3项${NC}"
+        echo -e "  ${DARK_GRAY}────────────────────────────────────────${NC}"
+        echo -e "  ${GREEN}5${NC}) 🌍 DNS服务器配置        ${GRAY}# 修改服务器DNS${NC}"
+        echo -e "  ${GREEN}6${NC}) 🔐 SSH安全配置          ${GRAY}# SSH端口和密码修改${NC}"
+        echo -e "  ${GREEN}7${NC}) 🚫 禁用IPv6             ${GRAY}# 避免双栈网络问题${NC}"
+        echo -e "  ${DARK_GRAY}────────────────────────────────────────${NC}"
+        echo -e "  ${GREEN}0${NC}) 🚪 退出脚本"
         echo
         
         read -p "$(echo -e "${YELLOW}请输入选择 (0-7): ${NC}")" choice
         
         case $choice in
             1)
-                echo -e "${GREEN}您选择了 [更新系统及软件包] ...${NC}"
+                echo
+                echo -e "${BLUE}▶▶▶ 正在执行 [更新系统及软件包]${NC}"
+                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 if run_optimization "update"; then
                     # 子脚本正常退出，设置显示标题框并继续
                     show_header="true"
@@ -209,7 +292,9 @@ interactive_menu() {
                 fi
                 ;;
             2)
-                echo -e "${GREEN}您选择了 [一键开启BBR] ...${NC}"
+                echo
+                echo -e "${BLUE}▶▶▶ 正在执行 [一键开启BBR]${NC}"
+                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 if run_optimization "bbr"; then
                     # 子脚本正常退出，设置显示标题框并继续
                     show_header="true"
@@ -217,7 +302,9 @@ interactive_menu() {
                 fi
                 ;;
             3)
-                echo -e "${GREEN}您选择了 [TCP网络调优] ...${NC}"
+                echo
+                echo -e "${BLUE}▶▶▶ 正在执行 [TCP网络调优]${NC}"
+                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 if run_optimization "tcp"; then
                     # 子脚本正常退出，设置显示标题框并继续
                     show_header="true"
@@ -225,7 +312,9 @@ interactive_menu() {
                 fi
                 ;;
             4)
-                echo -e "${GREEN}您选择了 [基础优化套餐] ...${NC}"
+                echo
+                echo -e "${BLUE}▶▶▶ 正在执行 [基础优化套餐]${NC}"
+                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 if run_optimization "basic"; then
                     # 子脚本正常退出，设置显示标题框并继续
                     show_header="true"
@@ -233,7 +322,9 @@ interactive_menu() {
                 fi
                 ;;
             5)
-                echo -e "${GREEN}您选择了 [DNS服务器配置] ...${NC}"
+                echo
+                echo -e "${BLUE}▶▶▶ 正在执行 [DNS服务器配置]${NC}"
+                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 if run_optimization "dns"; then
                     # 子脚本正常退出，设置显示标题框并继续
                     show_header="true"
@@ -241,7 +332,9 @@ interactive_menu() {
                 fi
                 ;;
             6)
-                echo -e "${GREEN}您选择了 [SSH安全配置] ...${NC}"
+                echo
+                echo -e "${BLUE}▶▶▶ 正在执行 [SSH安全配置]${NC}"
+                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 if run_optimization "ssh"; then
                     # 子脚本正常退出，设置显示标题框并继续
                     show_header="true"
@@ -249,7 +342,9 @@ interactive_menu() {
                 fi
                 ;;
             7)
-                echo -e "${GREEN}您选择了 [禁用IPv6] ...${NC}"
+                echo
+                echo -e "${BLUE}▶▶▶ 正在执行 [禁用IPv6]${NC}"
+                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 if run_optimization "ipv6"; then
                     # 子脚本正常退出，设置显示标题框并继续
                     show_header="true"
@@ -257,12 +352,15 @@ interactive_menu() {
                 fi
                 ;;
             0)
-                echo -e "${YELLOW}感谢使用本脚本合集！${NC}"
+                echo
+                echo -e "${GREEN}👋 感谢使用本脚本合集，再见！${NC}"
+                echo
                 exit 0
                 ;;
             *)
+                echo
                 warn "无效选择，请输入 0-7 之间的数字"
-                sleep 1
+                sleep 2
                 continue
                 ;;
         esac
@@ -280,12 +378,11 @@ interactive_menu() {
 
 # 主程序
 main() {
-    # 在顶部显示标题框
-    echo -e "${GREEN}╔═════════════════════════════════════════════════╗${NC}"
-    echo -e "${GREEN}║          服务器优化工具集合 - v$VERSION            ║${NC}"
-    echo -e "${GREEN}║          bash <(curl -sL ss.hide.ss)            ║${NC}"
-    echo -e "${GREEN}╚═════════════════════════════════════════════════╝${NC}"
-    echo
+    # 显示欢迎界面
+    show_welcome
+    
+    # 显示系统信息
+    show_system_info
     
     check_root
     check_system

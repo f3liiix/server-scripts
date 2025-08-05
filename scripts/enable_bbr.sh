@@ -530,16 +530,22 @@ prompt_reboot() {
 # 主程序
 main() {
     echo
+    echo -e "${BLUE}🚀 BBR启用工具${NC}"
+    echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+    
     # 权限检查
     if ! check_root; then
         exit 1
     fi
+    
     # 显示系统信息
     show_system_info
+    
     # 检查虚拟化环境
     if ! check_virtualization; then
         return 1
     fi
+    
     # 检查系统兼容性
     if ! is_debian_based; then
         local system_info
@@ -550,12 +556,14 @@ main() {
             return 1
         fi
     fi
+    
     # 检查BBR当前状态
     if check_bbr_status; then
         log_success "BBR已经启用，无需重复配置"
         verify_bbr_status
         return 0
     fi
+    
     # 检查内核版本
     local kernel_upgrade_needed=false
     if check_kernel_bbr_support; then
@@ -573,6 +581,7 @@ main() {
             return 0
         fi
     fi
+    
     # 安装内核（如果需要）
     if [[ "$kernel_upgrade_needed" == true ]]; then
         if ! install_bbr_kernel; then
@@ -580,11 +589,13 @@ main() {
             return 1
         fi
     fi
+    
     # 配置BBR
     if ! configure_bbr; then
         log_error "BBR配置失败"
         return 1
     fi
+    
     # 验证BBR状态
     if verify_bbr_status; then
         show_bbr_recommendations

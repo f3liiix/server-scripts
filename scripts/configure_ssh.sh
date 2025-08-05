@@ -8,6 +8,15 @@
 # Version:     1.0.0
 # ==============================================================================
 
+# 颜色定义
+readonly NC='\033[0m'         # No Color
+readonly RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
+readonly YELLOW='\033[0;33m'
+readonly BLUE='\033[0;34m'
+readonly CYAN='\033[0;36m'
+readonly DARK_GRAY='\033[1;30m'
+
 set -euo pipefail  # 严格模式：遇到错误立即退出
 
 # 获取脚本目录
@@ -169,38 +178,10 @@ change_ssh_port() {
 # 验证密码强度
 validate_password_strength() {
     local password="$1"
-    local min_length=8
+    local username="$2"
     
-    # 检查密码长度
-    if [[ ${#password} -lt $min_length ]]; then
-        log_error "密码长度至少需要 $min_length 个字符"
-        return 1
-    fi
-    
-    # 检查密码复杂度
-    local has_upper=false
-    local has_lower=false
-    local has_digit=false
-    local has_special=false
-    
-    if [[ "$password" =~ [A-Z] ]]; then has_upper=true; fi
-    if [[ "$password" =~ [a-z] ]]; then has_lower=true; fi
-    if [[ "$password" =~ [0-9] ]]; then has_digit=true; fi
-    if [[ "$password" =~ [^A-Za-z0-9] ]]; then has_special=true; fi
-    
-    local complexity_score=0
-    if [[ "$has_upper" == true ]]; then ((complexity_score++)); fi
-    if [[ "$has_lower" == true ]]; then ((complexity_score++)); fi
-    if [[ "$has_digit" == true ]]; then ((complexity_score++)); fi
-    if [[ "$has_special" == true ]]; then ((complexity_score++)); fi
-    
-    if [[ $complexity_score -lt 3 ]]; then
-        log_warning "密码复杂度不足，建议包含:"
-        echo "  - 大写字母 (A-Z)"
-        echo "  - 小写字母 (a-z)"
-        echo "  - 数字 (0-9)"
-        echo "  - 特殊字符 (!@#$%^&*)"
-        
+    # 使用common_functions.sh中的增强验证函数
+    if ! validate_password_strength "$password" "$username" 8; then
         if ! confirm_action "是否继续使用此密码？" "N"; then
             return 1
         fi
@@ -241,7 +222,7 @@ input_user_password() {
         fi
         
         # 验证密码强度
-        if ! validate_password_strength "$password"; then
+        if ! validate_password_strength "$password" "$username"; then
             if [[ $attempts -eq $max_attempts ]]; then
                 log_error "密码设置次数过多，退出"
                 return 1
@@ -547,10 +528,10 @@ show_connection_info() {
     fi
     
     echo
-    echo "=== 🔐 SSH连接信息 ==="
-    echo "服务器地址: $server_ip"
-    echo "SSH端口: $new_port"
-    echo "========================"
+    echo -e "${BLUE}=== 🔐 SSH连接信息 ===${NC}"
+    echo -e "  服务器地址: $server_ip"
+    echo -e "  SSH端口: ${GREEN}$new_port${NC}"
+    echo -e "${DARK_GRAY}========================${NC}"
 }
 
 # 显示防火墙配置建议
@@ -564,47 +545,46 @@ show_firewall_suggestions() {
     fi
     
     echo
-    echo "=== 🔥 防火墙配置建议 ==="
-    echo "端口已更改，请更新防火墙规则:"
+    echo -e "${BLUE}=== 🔥 防火墙配置建议 ===${NC}"
+    echo -e "${DARK_GRAY}端口已更改，请更新防火墙规则:${NC}"
     echo
     
     # UFW
     if command_exists ufw; then
-        echo "UFW防火墙:"
-        echo "  sudo ufw allow $new_port/tcp"
-        echo "  sudo ufw delete allow 22/tcp  # 删除旧规则"
+        echo -e "${CYAN}UFW防火墙:${NC}"
+        echo -e "  sudo ${GREEN}ufw allow $new_port/tcp${NC}"
+        echo -e "  sudo ${RED}ufw delete allow 22/tcp${NC}  # 删除旧规则"
         echo
     fi
     
     # iptables
     if command_exists iptables; then
-        echo "iptables防火墙:"
-        echo "  sudo iptables -A INPUT -p tcp --dport $new_port -j ACCEPT"
-        echo "  sudo iptables -D INPUT -p tcp --dport 22 -j ACCEPT  # 删除旧规则"
+        echo -e "${CYAN}iptables防火墙:${NC}"
+        echo -e "  sudo ${GREEN}iptables -A INPUT -p tcp --dport $new_port -j ACCEPT${NC}"
+        echo -e "  sudo ${RED}iptables -D INPUT -p tcp --dport 22 -j ACCEPT${NC}  # 删除旧规则"
         echo
     fi
     
     # firewalld (CentOS/RHEL)
     if command_exists firewall-cmd; then
-        echo "firewalld防火墙:"
-        echo "  sudo firewall-cmd --permanent --add-port=$new_port/tcp"
-        echo "  sudo firewall-cmd --reload"
+        echo -e "${CYAN}firewalld防火墙:${NC}"
+        echo -e "  sudo ${GREEN}firewall-cmd --permanent --add-port=$new_port/tcp${NC}"
+        echo -e "  sudo ${GREEN}firewall-cmd --reload${NC}"
         echo
     fi
     
-    echo "=============================="
+    echo -e "${DARK_GRAY}==============================${NC}"
 }
 
 # 主菜单
 show_main_menu() {
     echo
-    echo "=== SSH安全配置菜单 ==="
-    echo "1) 修改SSH端口"
-    echo "2) 修改用户密码"
-    echo "3) 同时修改端口和密码"
-    echo "4) 查看当前SSH配置"
-    echo "0) 退出SSH配置工具"
-    echo "======================="
+    echo -e "${BLUE}选择操作:${NC}"
+    echo -e "  ${CYAN}1)${NC} 修改SSH端口"
+    echo -e "  ${CYAN}2)${NC} 修改用户密码"
+    echo -e "  ${CYAN}3)${NC} 同时修改端口和密码"
+    echo -e "  ${CYAN}4)${NC} 查看当前SSH配置"
+    echo -e "  ${CYAN}0)${NC} 退出SSH配置工具"
 }
 
 # 显示当前配置
@@ -613,54 +593,25 @@ show_current_config() {
     current_port=$(get_current_ssh_port)
     
     echo
-    echo "=== 当前SSH配置 ==="
-    echo "SSH端口: $current_port"
-    echo "配置文件: $SSHD_CONFIG"
+    echo "当前SSH配置:"
+    echo -e "  SSH端口: ${BLUE}$current_port${NC}"
+    echo -e "  配置文件: $SSHD_CONFIG"
     
     # 检查服务状态并显示颜色
     if is_service_running ssh || is_service_running sshd; then
-        echo -e "服务状态: ${GREEN}运行中${NC}"
+        echo -e "  服务状态: ${GREEN}运行中${NC}"
     else
-        echo -e "服务状态: ${RED}未运行${NC}"
+        echo -e "  服务状态: ${RED}未运行${NC}"
     fi
-    
-    echo "==================="
 }
 
 # 主程序
 main() {
-    # 1. 优先处理--help参数（无需root权限）
-    if [[ $# -gt 0 ]] && [[ "$1" == "--help" ]]; then
-        echo "用法: $0 [选项]"
-        echo "选项:"
-        echo "  --port      仅修改SSH端口"
-        echo "  --password  仅修改用户密码"
-        echo "  --help      显示帮助信息"
-        echo ""
-        echo "功能说明:"
-        echo "  - 修改SSH默认端口（1024-65535）"
-        echo "  - 修改用户密码（支持root/当前用户/自定义用户）"
-        echo "  - 配置文件自动备份和验证"
-        echo "  - 防火墙配置建议"
-        echo ""
-        echo "注意: 此脚本需要root权限运行"
-        exit 0
-    fi
-    
-    # 2. 权限检查
-    if ! check_root; then
-        exit 1
-    fi
-    
-    # 3. 检查SSH服务
-    if ! check_ssh_service; then
-        exit 1
-    fi
-    
-    # 4. 创建日志目录
-    mkdir -p "$(dirname "$LOG_FILE")"
-    
     # 只保留交互式菜单
+    echo
+    echo -e "${BLUE}🔐 SSH安全配置工具${NC}"
+    echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+    
     while true; do
         show_main_menu
         
@@ -670,7 +621,8 @@ main() {
         case "$choice" in
             1)
                 echo
-                log_info "=== 修改SSH端口 ==="
+                echo -e "${BLUE}▶▶▶ 修改SSH端口${NC}"
+                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 local new_port
                 if ! new_port=$(input_ssh_port); then
                     log_error "端口输入失败"
@@ -688,7 +640,8 @@ main() {
                 ;;
             2)
                 echo
-                log_info "=== 修改用户密码 ==="
+                echo -e "${BLUE}▶▶▶ 修改用户密码${NC}"
+                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 local username
                 if ! username=$(select_user); then
                     log_error "用户选择失败"
@@ -705,7 +658,8 @@ main() {
                 ;;
             3)
                 echo
-                log_info "=== 同时修改端口和密码 ==="
+                echo -e "${BLUE}▶▶▶ 同时修改端口和密码${NC}"
+                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 
                 # 修改端口
                 local new_port
@@ -748,6 +702,9 @@ main() {
                 fi
                 ;;
             4)
+                echo
+                echo -e "${BLUE}▶▶▶ 查看当前SSH配置${NC}"
+                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 show_current_config
                 ;;
             0)
@@ -761,7 +718,7 @@ main() {
         esac
         
         echo
-        read -p "按回车键继续..." -r
+        read -p "$(echo -e "${CYAN}按回车键继续...${NC}")" -r
     done
 }
 

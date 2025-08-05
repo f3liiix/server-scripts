@@ -736,6 +736,10 @@ restore_dns_backup() {
 # 主程序
 main() {
     # 只保留交互式菜单
+    echo
+    echo -e "${BLUE}🌍 DNS配置工具${NC}"
+    echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+    
     while true; do
         show_main_menu
         
@@ -745,42 +749,48 @@ main() {
         case "$choice" in
             1)
                 echo
-                log_info "您选择了 [Cloudflare DNS] ..."
+                echo -e "${BLUE}▶▶▶ 配置 Cloudflare DNS${NC}"
+                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 if ! configure_preset_dns "cloudflare"; then
                     log_error "Cloudflare DNS配置失败"
                 fi
                 ;;
             2)
                 echo
-                log_info "您选择了 [Google DNS] ..."
+                echo -e "${BLUE}▶▶▶ 配置 Google DNS${NC}"
+                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 if ! configure_preset_dns "google"; then
                     log_error "Google DNS配置失败"
                 fi
                 ;;
             3)
                 echo
-                log_info "您选择了 [阿里DNS] ..."
+                echo -e "${BLUE}▶▶▶ 配置 阿里DNS${NC}"
+                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 if ! configure_preset_dns "ali"; then
                     log_error "阿里DNS配置失败"
                 fi
                 ;;
             4)
                 echo
-                log_info "您选择了 [腾讯DNS] ..."
+                echo -e "${BLUE}▶▶▶ 配置 腾讯DNS${NC}"
+                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 if ! configure_preset_dns "tencent"; then
                     log_error "腾讯DNS配置失败"
                 fi
                 ;;
             5)
                 echo
-                log_info "您选择了 [自定义DNS服务器] ..."
+                echo -e "${BLUE}▶▶▶ 配置 自定义DNS服务器${NC}"
+                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 if ! configure_custom_dns; then
                     log_error "自定义DNS配置失败"
                 fi
                 ;;
             6)
                 echo
-                log_info "您选择了 [恢复DNS配置备份] ..."
+                echo -e "${BLUE}▶▶▶ 恢复DNS配置备份${NC}"
+                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
                 if ! restore_dns_backup; then
                     log_error "DNS备份恢复失败"
                 fi

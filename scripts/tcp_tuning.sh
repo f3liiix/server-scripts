@@ -11,81 +11,24 @@
 
 set -euo pipefail  # 严格模式：遇到错误立即退出
 
-# --- 颜色定义 ---
-readonly RED='\033[0;31m'
-readonly GREEN='\033[0;32m'
-readonly YELLOW='\033[1;33m'
-readonly BLUE='\033[0;34m'
-readonly CYAN='\033[0;36m'
-readonly NC='\033[0m' # No Color
+# 获取脚本目录
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# 加载通用函数库
+if [[ -f "$SCRIPT_DIR/common_functions.sh" ]]; then
+    # shellcheck source=./common_functions.sh
+    source "$SCRIPT_DIR/common_functions.sh"
+else
+    echo "错误: 无法找到通用函数库 common_functions.sh"
+    exit 1
+fi
 
 # --- 配置项 ---
 readonly SCRIPT_VERSION="1.0.0"
-readonly BACKUP_DIR="/etc/backup_tcp_tuning_$(date +%Y%m%d_%H%M%S)"
-readonly SYSCTL_CONF="/etc/sysctl.conf"
-readonly LIMITS_CONF="/etc/security/limits.conf"
-readonly MIN_KERNEL_VERSION="4.9"
-
-# --- 工具函数 ---
-log_info() {
-    echo -e "${BLUE}[信息]${NC} $1"
-}
-
-log_success() {
-    echo -e "${GREEN}[成功]${NC} $1"
-}
-
-log_warning() {
-    echo -e "${YELLOW}[注意]${NC} $1"
-}
-
-log_error() {
-    echo -e "${RED}[错误]${NC} $1" >&2
-}
-
-log_step() {
-    echo -e "${CYAN}[步骤]${NC} $1"
-}
-
-# 系统检测函数
-detect_system() {
-    local distro=""
-    local version=""
-    
-    if [[ -f /etc/os-release ]]; then
-        # 使用grep和cut解析，避免source导致的变量冲突
-        distro=$(grep '^ID=' /etc/os-release | cut -d'=' -f2 | tr -d '"' || echo "unknown")
-        version=$(grep '^VERSION_ID=' /etc/os-release | cut -d'=' -f2 | tr -d '"' || echo "unknown")
-        
-        # 如果VERSION_ID不存在，尝试使用VERSION
-        if [[ "$version" == "unknown" ]]; then
-            version=$(grep '^VERSION=' /etc/os-release | cut -d'=' -f2 | tr -d '"' || echo "unknown")
-        fi
-    elif [[ -f /etc/debian_version ]]; then
-        distro="debian"
-        version=$(cat /etc/debian_version)
-    elif [[ -f /etc/redhat-release ]]; then
-        distro="rhel"
-        version=$(grep -o '[0-9]\+\.[0-9]\+' /etc/redhat-release | head -1)
-    else
-        distro="unknown"
-        version="unknown"
-    fi
-    
-    echo "$distro:$version"
-}
-
-# 版本比较函数 (返回0表示version1 >= version2)
-version_compare() {
-    local version1="$1"
-    local version2="$2"
-    
-    if [[ "$(printf '%s\n' "$version1" "$version2" | sort -V | head -n1)" == "$version2" ]]; then
-        return 0  # version1 >= version2
-    else
-        return 1  # version1 < version2
-    fi
-}
+readonly BACKUP_DIR="${TCP_BACKUP_DIR}_$(date +%Y%m%d_%H%M%S)"
+readonly SYSCTL_CONF="${SYSCTL_CONF:-/etc/sysctl.conf}"
+readonly LIMITS_CONF="${LIMITS_CONF:-/etc/security/limits.conf}"
+readonly MIN_KERNEL_VERSION="${MIN_KERNEL_VERSION:-4.9}"
 
 # 检查内核版本
 check_kernel_version() {
@@ -111,6 +54,9 @@ check_system_compatibility() {
     
     log_info "检测到系统: $distro $version"
     
+    # 检查系统要求
+    check_system_requirements "4.9" "debian ubuntu centos rhel"
+    
     case "$distro" in
         "debian")
             if version_compare "$version" "9"; then
@@ -126,11 +72,16 @@ check_system_compatibility() {
                 log_warning "Ubuntu $version 可能不完全支持所有功能"
             fi
             ;;
+        "centos"|"rhel")
+            if version_compare "$version" "7"; then
+                log_success "$distro $version 完全支持"
+            else
+                log_warning "$distro $version 可能不完全支持所有功能"
+            fi
+            ;;
         *)
             log_warning "未明确测试的系统: $distro $version"
-            read -p "是否继续? (y/N): " -n 1 -r
-            echo
-            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            if ! confirm_action "是否继续?"; then
                 exit 0
             fi
             ;;
@@ -141,21 +92,35 @@ check_system_compatibility() {
 create_backup() {
     log_step "创建配置文件备份..."
     
-    mkdir -p "$BACKUP_DIR"
+    # 确保日志目录存在
+    mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || true
+    
+    if ! mkdir -p "$BACKUP_DIR"; then
+        log_error "无法创建备份目录: $BACKUP_DIR"
+        return 1
+    fi
     
     # 备份关键配置文件
     if [[ -f "$SYSCTL_CONF" ]]; then
-        cp "$SYSCTL_CONF" "$BACKUP_DIR/sysctl.conf.bak"
-        log_info "已备份 $SYSCTL_CONF"
+        if cp "$SYSCTL_CONF" "$BACKUP_DIR/sysctl.conf.bak"; then
+            log_info "已备份 $SYSCTL_CONF"
+        else
+            log_error "备份 $SYSCTL_CONF 失败"
+        fi
     fi
     
     if [[ -f "$LIMITS_CONF" ]]; then
-        cp "$LIMITS_CONF" "$BACKUP_DIR/limits.conf.bak"
-        log_info "已备份 $LIMITS_CONF"
+        if cp "$LIMITS_CONF" "$BACKUP_DIR/limits.conf.bak"; then
+            log_info "已备份 $LIMITS_CONF"
+        else
+            log_error "备份 $LIMITS_CONF 失败"
+        fi
     fi
     
     # 记录当前sysctl状态
-    sysctl -a > "$BACKUP_DIR/sysctl_before.txt" 2>/dev/null || true
+    if command -v sysctl >/dev/null 2>&1; then
+        sysctl -a > "$BACKUP_DIR/sysctl_before.txt" 2>/dev/null || true
+    fi
     
     log_success "备份已创建: $BACKUP_DIR"
 }
@@ -166,7 +131,7 @@ check_bbr_availability() {
     
     # 检查内核是否支持BBR
     if [[ -f /proc/sys/net/ipv4/tcp_available_congestion_control ]]; then
-        if grep -q bbr /proc/sys/net/ipv4/tcp_available_congestion_control; then
+        if grep -q bbr /proc/sys/net/ipv4/tcp_available_congestion_control 2>/dev/null; then
             bbr_available=true
         fi
     fi
@@ -200,15 +165,24 @@ configure_conntrack() {
         if [[ -f "$path" ]] && [[ -r "$path" ]] && [[ -w "$path" ]]; then
             # 先测试参数是否可以设置
             local current_value
-            current_value=$(cat "$path" 2>/dev/null)
+            current_value=$(cat "$path" 2>/dev/null) || {
+                log_warning "无法读取 $path 的当前值"
+                continue
+            }
             
             if [[ -n "$current_value" ]]; then
                 local param_name="${path#/proc/sys/}"
                 param_name="${param_name//\//.}"
                 
                 # 添加配置到sysctl.conf
-                echo "# 连接追踪表大小优化" >> "$SYSCTL_CONF"
-                echo "$param_name = 1048576" >> "$SYSCTL_CONF"
+                echo "# 连接追踪表大小优化" >> "$SYSCTL_CONF" 2>/dev/null || {
+                    log_error "无法写入 $SYSCTL_CONF"
+                    return 1
+                }
+                echo "$param_name = 1048576" >> "$SYSCTL_CONF" 2>/dev/null || {
+                    log_error "无法写入 $SYSCTL_CONF"
+                    return 1
+                }
                 log_info "配置连接追踪参数: $param_name (当前值: $current_value)"
                 conntrack_configured=true
                 break
@@ -227,7 +201,7 @@ clean_invalid_conntrack_config() {
     log_info "检查并清理无效的conntrack配置..."
     
     # 检查现有配置中是否有无效的conntrack参数
-    if grep -q "nf_conntrack_max" "$SYSCTL_CONF"; then
+    if grep -q "nf_conntrack_max" "$SYSCTL_CONF" 2>/dev/null; then
         local has_valid_conntrack=false
         
         # 检查conntrack模块和路径
@@ -251,13 +225,22 @@ clean_invalid_conntrack_config() {
             
             # 创建临时文件，过滤掉conntrack相关行
             local temp_conf="/tmp/sysctl_clean.conf"
-            grep -v "nf_conntrack_max" "$SYSCTL_CONF" > "$temp_conf"
+            if ! grep -v "nf_conntrack_max" "$SYSCTL_CONF" > "$temp_conf"; then
+                log_error "无法创建临时配置文件"
+                rm -f "$temp_conf" 2>/dev/null || true
+                return 1
+            fi
             
             # 替换原文件
-            cp "$temp_conf" "$SYSCTL_CONF"
-            rm -f "$temp_conf"
+            if cp "$temp_conf" "$SYSCTL_CONF"; then
+                log_success "已清理无效的conntrack配置"
+            else
+                log_error "无法更新 $SYSCTL_CONF"
+                rm -f "$temp_conf" 2>/dev/null || true
+                return 1
+            fi
             
-            log_success "已清理无效的conntrack配置"
+            rm -f "$temp_conf" 2>/dev/null || true
         fi
     fi
 }
@@ -266,16 +249,22 @@ clean_invalid_conntrack_config() {
 apply_tcp_optimization() {
     
     # 先清理可能存在的无效配置
-    clean_invalid_conntrack_config
+    if ! clean_invalid_conntrack_config; then
+        log_error "清理无效conntrack配置失败"
+        return 1
+    fi
     
     # 检查是否已存在配置
-    if grep -q "TCP网络调优" "$SYSCTL_CONF"; then
+    if grep -q "TCP网络调优" "$SYSCTL_CONF" 2>/dev/null; then
         log_warning "检测到已存在的TCP优化配置，将跳过重复配置"
         return 0
     fi
     
     # 添加TCP优化配置
-    cat >> "$SYSCTL_CONF" << 'EOF'
+    cat >> "$SYSCTL_CONF" << 'EOF' 2>/dev/null || {
+        log_error "无法写入TCP优化配置到 $SYSCTL_CONF"
+        return 1
+    }
 
 # ===== TCP网络调优 v1.0.0 =====
 # 连接队列优化
@@ -315,17 +304,35 @@ EOF
 
     # 条件性添加BBR配置
     if check_bbr_availability; then
-        echo "# BBR拥塞控制算法" >> "$SYSCTL_CONF"
-        echo "net.ipv4.tcp_congestion_control = bbr" >> "$SYSCTL_CONF"
+        echo "# BBR拥塞控制算法" >> "$SYSCTL_CONF" 2>/dev/null || {
+            log_error "无法写入BBR配置到 $SYSCTL_CONF"
+            return 1
+        }
+        echo "net.ipv4.tcp_congestion_control = bbr" >> "$SYSCTL_CONF" 2>/dev/null || {
+            log_error "无法写入BBR配置到 $SYSCTL_CONF"
+            return 1
+        }
     else
-        echo "# 使用默认拥塞控制算法 (BBR不可用)" >> "$SYSCTL_CONF"
-        echo "# net.ipv4.tcp_congestion_control = cubic" >> "$SYSCTL_CONF"
+        echo "# 使用默认拥塞控制算法 (BBR不可用)" >> "$SYSCTL_CONF" 2>/dev/null || {
+            log_error "无法写入默认配置到 $SYSCTL_CONF"
+            return 1
+        }
+        echo "# net.ipv4.tcp_congestion_control = cubic" >> "$SYSCTL_CONF" 2>/dev/null || {
+            log_error "无法写入默认配置到 $SYSCTL_CONF"
+            return 1
+        }
     fi
     
     # 配置conntrack参数
-    configure_conntrack
+    if ! configure_conntrack; then
+        log_error "配置conntrack参数失败"
+        return 1
+    fi
     
-    echo "# =============================================" >> "$SYSCTL_CONF"
+    echo "# =============================================" >> "$SYSCTL_CONF" 2>/dev/null || {
+        log_error "无法写入配置结束标记到 $SYSCTL_CONF"
+        return 1
+    }
     
     log_success "TCP优化配置已添加"
 }
@@ -333,12 +340,15 @@ EOF
 # 应用文件描述符限制优化
 apply_ulimit_optimization() {
     # 检查是否已存在配置
-    if grep -q "文件描述符限制 (auto-configured)" "$LIMITS_CONF"; then
+    if grep -q "文件描述符限制 (auto-configured)" "$LIMITS_CONF" 2>/dev/null; then
         log_warning "检测到已存在的文件描述符配置，将跳过重复配置"
         return 0
     fi
     
-    cat >> "$LIMITS_CONF" << 'EOF'
+    cat >> "$LIMITS_CONF" << 'EOF' 2>/dev/null || {
+        log_error "无法写入文件描述符限制配置到 $LIMITS_CONF"
+        return 1
+    }
 
 # ===== 文件描述符限制 v1.0.0 =====
 * soft nofile 1048576
@@ -361,7 +371,7 @@ EOF
 apply_and_verify_config() {
     # 先测试配置的有效性，过滤掉无效参数
     local temp_output
-    temp_output=$(sysctl -p 2>&1)
+    temp_output=$(sysctl -p 2>&1) || true
     local sysctl_exit_code=$?
     
     if [[ $sysctl_exit_code -eq 0 ]]; then
@@ -373,21 +383,30 @@ apply_and_verify_config() {
             
             # 创建临时配置文件，过滤掉conntrack参数
             local temp_sysctl="/tmp/sysctl_filtered.conf"
-            grep -v "nf_conntrack_max" "$SYSCTL_CONF" > "$temp_sysctl"
+            if ! grep -v "nf_conntrack_max" "$SYSCTL_CONF" > "$temp_sysctl"; then
+                log_error "无法创建过滤后的配置文件"
+                rm -f "$temp_sysctl" 2>/dev/null || true
+                return 1
+            fi
             
             # 尝试应用过滤后的配置
             if sysctl -p "$temp_sysctl" >/dev/null 2>&1; then
                 log_success "sysctl 配置应用成功（已跳过无效参数）"
                 # 更新原配置文件，移除无效参数
-                cp "$temp_sysctl" "$SYSCTL_CONF"
-                log_info "已从配置文件中移除无效的 conntrack 参数"
+                if cp "$temp_sysctl" "$SYSCTL_CONF"; then
+                    log_info "已从配置文件中移除无效的 conntrack 参数"
+                else
+                    log_error "无法更新 $SYSCTL_CONF"
+                    rm -f "$temp_sysctl" 2>/dev/null || true
+                    return 1
+                fi
             else
                 log_error "sysctl 配置应用失败，检查详细错误..."
                 sysctl -p "$temp_sysctl"
-                rm -f "$temp_sysctl"
+                rm -f "$temp_sysctl" 2>/dev/null || true
                 return 1
             fi
-            rm -f "$temp_sysctl"
+            rm -f "$temp_sysctl" 2>/dev/null || true
         else
             # 其他类型的错误
             log_error "sysctl 配置应用失败，检查详细错误..."
@@ -477,67 +496,116 @@ rollback_changes() {
     
     if [[ -d "$BACKUP_DIR" ]]; then
         if [[ -f "$BACKUP_DIR/sysctl.conf.bak" ]]; then
-            cp "$BACKUP_DIR/sysctl.conf.bak" "$SYSCTL_CONF"
-            log_info "已恢复sysctl配置"
+            if cp "$BACKUP_DIR/sysctl.conf.bak" "$SYSCTL_CONF"; then
+                log_info "已恢复sysctl配置"
+            else
+                log_error "无法恢复sysctl配置"
+            fi
         fi
         
         if [[ -f "$BACKUP_DIR/limits.conf.bak" ]]; then
-            cp "$BACKUP_DIR/limits.conf.bak" "$LIMITS_CONF"
-            log_info "已恢复limits配置"
+            if cp "$BACKUP_DIR/limits.conf.bak" "$LIMITS_CONF"; then
+                log_info "已恢复limits配置"
+            else
+                log_error "无法恢复limits配置"
+            fi
         fi
         
         # 重新加载配置
         sysctl -p >/dev/null 2>&1 || true
         log_info "配置已回滚到优化前状态"
+    else
+        log_warning "未找到备份目录: $BACKUP_DIR"
     fi
 }
 
 # 主程序
 main() {
     echo
+    echo -e "${BLUE}🌐 TCP网络调优工具${NC}"
+    echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+    
+    # 开始脚本计时
+    start_script_timer
     
     # 1. 检查root权限
-    if [[ $(id -u) -ne 0 ]]; then
-        log_error "此脚本必须使用 root 权限运行"
-        log_info "请使用: sudo $0"
+    if ! check_root; then
+        end_script_timer
         exit 1
     fi
     
     # 2. 系统兼容性检查
+    start_task_timer "系统兼容性检查"
     check_system_compatibility
+    end_task_timer
     
     # 3. 内核版本检查
+    start_task_timer "内核版本检查"
     check_kernel_version "$MIN_KERNEL_VERSION" || log_warning "建议升级内核以获得最佳性能"
+    end_task_timer
     
     # 4. 创建备份
-    create_backup
+    start_task_timer "创建配置备份"
+    if ! create_backup; then
+        log_error "创建备份失败"
+        end_script_timer
+        exit 1
+    fi
+    end_task_timer
     
     # 5. 设置错误处理
-    trap rollback_changes ERR
+    trap 'rollback_changes; end_script_timer; exit 1' ERR
     
     # 6. 应用TCP优化
-    apply_tcp_optimization
+    start_task_timer "应用TCP优化配置"
+    if ! apply_tcp_optimization; then
+        log_error "TCP优化配置应用失败"
+        end_script_timer
+        exit 1
+    fi
+    end_task_timer
     
     # 7. 应用文件描述符优化
-    apply_ulimit_optimization
+    start_task_timer "应用文件描述符优化"
+    if ! apply_ulimit_optimization; then
+        log_error "文件描述符优化配置应用失败"
+        end_script_timer
+        exit 1
+    fi
+    end_task_timer
     
     # 8. 应用配置
-    apply_and_verify_config
+    start_task_timer "应用并验证系统配置"
+    if ! apply_and_verify_config; then
+        log_error "配置应用和验证失败"
+        end_script_timer
+        exit 1
+    fi
+    end_task_timer
     
     # 9. 配置防火墙
+    start_task_timer "配置防火墙规则"
     configure_firewall
+    end_task_timer
     
     # 10. 显示结果
+    start_task_timer "显示优化结果"
     show_optimization_results
+    end_task_timer
     
     # 11. 显示建议
+    start_task_timer "显示后续建议"
     show_recommendations
+    end_task_timer
     
     # 清除错误陷阱
     trap - ERR
     
     log_success "TCP网络调优完成！"
     echo
+    
+    # 结束脚本计时
+    end_script_timer
 }
 
 # 执行主程序
