@@ -520,7 +520,7 @@ show_connection_info() {
     fi
     
     echo
-    echo -e "${BLUE}=== 🔐 SSH连接信息 ===${NC}"
+    echo -e "${GREEN}=== 🔐 SSH连接信息 ===${NC}"
     echo -e "  服务器地址: $server_ip"
     echo -e "  SSH端口: ${GREEN}$new_port${NC}"
     echo -e "${DARK_GRAY}========================${NC}"
@@ -537,7 +537,7 @@ show_firewall_suggestions() {
     fi
     
     echo
-    echo -e "${BLUE}=== 🔥 防火墙配置建议 ===${NC}"
+    echo -e "${GREEN}=== 🔥 防火墙配置建议 ===${NC}"
     echo -e "${DARK_GRAY}端口已更改，请更新防火墙规则:${NC}"
     echo
     
@@ -571,7 +571,7 @@ show_firewall_suggestions() {
 # 主菜单
 show_main_menu() {
     echo
-    echo -e "${BLUE}选择操作:${NC}"
+    echo -e "${CYAN}选择操作:${NC}"
     echo -e "  ${CYAN}1)${NC} 修改SSH端口"
     echo -e "  ${CYAN}2)${NC} 修改用户密码"
     echo -e "  ${CYAN}3)${NC} 同时修改端口和密码"
@@ -586,7 +586,7 @@ show_current_config() {
     
     echo
     echo "当前SSH配置:"
-    echo -e "  SSH端口: ${BLUE}$current_port${NC}"
+    echo -e "  SSH端口: ${GREEN}$current_port${NC}"
     echo -e "  配置文件: $SSHD_CONFIG"
     
     # 检查服务状态并显示颜色
@@ -601,20 +601,21 @@ show_current_config() {
 main() {
     # 只保留交互式菜单
     echo
-    echo -e "${BLUE}🔐 SSH安全配置工具${NC}"
-    echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+    echo -e "${GREEN}🔐 SSH安全配置工具${NC}"
+    echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
     
     while true; do
         show_main_menu
         
         local choice
+        echo
         read -p "$(echo -e "${YELLOW}请输入选择 (0-4): ${NC}")" choice
         
         case "$choice" in
             1)
                 echo
                 echo -e "${BLUE}▶▶▶ 修改SSH端口${NC}"
-                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+                echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
                 local new_port
                 if ! new_port=$(input_ssh_port); then
                     log_error "端口输入失败"
@@ -633,7 +634,7 @@ main() {
             2)
                 echo
                 echo -e "${BLUE}▶▶▶ 修改用户密码${NC}"
-                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+                echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
                 local username
                 if ! username=$(select_user); then
                     log_error "用户选择失败"
@@ -651,7 +652,7 @@ main() {
             3)
                 echo
                 echo -e "${BLUE}▶▶▶ 同时修改端口和密码${NC}"
-                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+                echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
                 
                 # 修改端口
                 local new_port
@@ -696,7 +697,7 @@ main() {
             4)
                 echo
                 echo -e "${BLUE}▶▶▶ 查看当前SSH配置${NC}"
-                echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
+                echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
                 show_current_config
                 ;;
             0)
