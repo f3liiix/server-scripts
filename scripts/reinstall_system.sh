@@ -27,7 +27,8 @@ check_wget() {
 # 获取用户选择的操作系统
 select_os() {
     while true; do
-        echo -e "\n${INFO}💿 请选择要安装的操作系统:"
+        echo -e "\n${GREEN}💿 请选择要安装的操作系统:"
+        echo
         echo "  1) Debian"
         echo "  2) Ubuntu"
         echo "  3) CentOS"
@@ -50,7 +51,8 @@ select_version() {
     while true; do
         case "${OS}" in
             "debian")
-                echo -e "\n${INFO}请选择 Debian 版本:"
+                echo -e "\n${GREEN}💿 请选择 Debian 版本:"
+                echo
                 echo "  1) Debian 11 (bullseye)"
                 echo "  2) Debian 12 (bookworm) [默认]"
                 echo
@@ -63,7 +65,8 @@ select_version() {
                 esac
                 ;;
             "ubuntu")
-                echo -e "\n${INFO}请选择 Ubuntu 版本:"
+                echo -e "\n${GREEN}💿 请选择 Ubuntu 版本:"
+                echo
                 echo "  1) Ubuntu 20.04 (focal)"
                 echo "  2) Ubuntu 22.04 (jammy)"
                 echo "  3) Ubuntu 24.04 (noble) [默认]"
@@ -78,7 +81,8 @@ select_version() {
                 esac
                 ;;
             "centos")
-                echo -e "\n${INFO}请选择 CentOS 版本:"
+                echo -e "\n${GREEN}💿 请选择 CentOS 版本:"
+                echo
                 echo "  1) CentOS 7"
                 echo "  2) CentOS 8 [默认]"
                 echo "  3) CentOS 9"
@@ -93,7 +97,8 @@ select_version() {
                 esac
                 ;;
             "alpine")
-                echo -e "\n${INFO}请选择 Alpine 版本:"
+                echo -e "\n${GREEN}💿 请选择 Alpine 版本:"
+                echo
                 echo "  1) Alpine 3.16"
                 echo "  2) Alpine 3.17"
                 echo "  3) Alpine 3.18"
@@ -116,7 +121,7 @@ select_version() {
 # 获取 SSH 端口
 get_ssh_port() {
     while true; do
-        read -rp "$(echo -e "\n${INFO}请输入 SSH 端口 (默认为 22): ${YELLOW}")" port_input
+        read -rp "$(echo -e "\n${INFO}🔐 请输入 SSH 端口 (默认为 22): ${YELLOW}")" port_input
         echo -ne "${NC}"
         
         # 如果用户直接按回车，使用默认值
@@ -141,7 +146,7 @@ get_ssh_port() {
 
 # 获取 SSH 密码
 get_ssh_password() {
-    echo -e "\n${INFO} 请输入 SSH 密码 (默认密码为 12345678): ${YELLOW}"
+    echo -e "\n${INFO}🔐 请输入 SSH 密码 (默认密码为 12345678): ${YELLOW}"
     read -rsp "" SSH_PASSWORD
     echo -ne "${NC}"
     if [[ -z "${SSH_PASSWORD}" ]]; then
@@ -152,7 +157,7 @@ get_ssh_password() {
 
 # 获取主机名
 get_hostname() {
-    read -rp "$(echo -e "\n${INFO} 请输入主机名 (默认为 ${OS}): ${YELLOW}")" CUSTOM_HOSTNAME
+    read -rp "$(echo -e "\n${INFO}🔤 请输入主机名 (默认为 ${OS}): ${YELLOW}")" CUSTOM_HOSTNAME
     echo -ne "${NC}"
     if [[ -z "${CUSTOM_HOSTNAME}" ]]; then
         HOSTNAME="${OS}"
@@ -163,7 +168,7 @@ get_hostname() {
 
 # 是否启用 BBR
 enable_bbr_option() {
-    read -rp "$(echo -e "\n${INFO} 是否启用 BBR? (Y/n): ${YELLOW}")" bbr_choice
+    read -rp "$(echo -e "\n${INFO}🚀 是否启用 BBR? (Y/n): ${YELLOW}")" bbr_choice
     echo -ne "${NC}"
     case "${bbr_choice}" in
         n|N) ENABLE_BBR=false ;;
@@ -173,23 +178,23 @@ enable_bbr_option() {
 
 # 下载并执行脚本
 run_reinstall() {
-    echo -e "\n${INFO} 开始下载安装脚本..."
+    echo -e "\n${INFO}⬇️ 开始下载安装脚本..."
     
     if ! check_wget; then
-        echo -e "${ERROR} wget 安装失败，无法继续"
+        echo -e "${ERROR}wget 安装失败，无法继续"
         return 1
     fi
     
     # 下载脚本
     if ! wget --no-check-certificate -qO InstallNET.sh 'https://gitee.com/mb9e8j2/Tools/raw/master/Linux_reinstall/InstallNET.sh'; then
-        echo -e "${ERROR} 下载 InstallNET.sh 脚本失败"
+        echo -e "${ERROR}下载 InstallNET.sh 脚本失败"
         return 1
     fi
     
     # 添加执行权限
     chmod a+x InstallNET.sh
     
-    echo -e "${INFO} 脚本下载完成，准备执行..."
+    echo -e "${INFO}☑️ 脚本下载完成，准备执行..."
     
     # 构建命令
     CMD="bash InstallNET.sh -${OS} ${VERSION} -port \"${SSH_PORT}\" -pwd '${SSH_PASSWORD}' -hostname \"${HOSTNAME}\""
@@ -198,23 +203,23 @@ run_reinstall() {
         CMD="${CMD} --bbr"
     fi
     
-    echo -e "\n${INFO} 将执行以下命令:"
+    echo -e "\n${INFO}📋 将执行以下命令:"
     echo "${CMD}"
     
-    echo -e "\n${WARN} 重要提醒:"
+    echo -e "\n${WARN}⚠️ 重要提醒:"
     echo "1. 系统重装后所有数据将丢失，请提前做好数据备份"
     echo "2. 脚本执行完毕后需使用 reboot 命令重启开始重装"
     echo "3. 请确认你的服务器安全组已放行 SSH 端口 ${SSH_PORT}"
     
-    read -rp "$(echo -e "\n${CONFIRM} 确认执行? (Y/n): ${YELLOW}")" confirm
+    read -rp "$(echo -e "\n${CONFIRM}确认执行? (Y/n): ${YELLOW}")" confirm
     echo -ne "${NC}"
     
     if [[ "${confirm}" =~ ^[Nn]$ ]]; then
-        echo -e "\n${INFO} 已取消操作"
+        echo -e "\n${INFO}已取消操作"
         rm -f InstallNET.sh
         return 0
     else
-        echo -e "\n${INFO} 开始执行系统重装..."
+        echo -e "\n${INFO}开始执行系统重装..."
         eval "${CMD}"
     fi
 }
@@ -226,7 +231,7 @@ main() {
     select_version
     
     # 展示用户的选择
-    echo -e "\n${INFO} 您的选择:"
+    echo -e "\n${INFO}📋 您的选择:"
     echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
     echo -e "系统 : ${WHITE}${OS}${NC}"
     echo -e "版本 : ${WHITE}${VERSION}${NC}"
