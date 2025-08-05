@@ -21,7 +21,6 @@ check_wget() {
             return 1
         fi
     fi
-    echo -e "${INFO} wget 已安装"
 }
 
 # 获取用户选择的操作系统
@@ -196,7 +195,7 @@ enable_bbr_option() {
 
 # 下载并执行脚本
 run_reinstall() {
-    echo -e "\n${INFO}⬇️ 开始下载安装脚本..."
+    echo -e "\n${INFO}⬇️  开始下载安装脚本..."
     
     if ! check_wget; then
         echo -e "${ERROR}wget 安装失败，无法继续"
@@ -212,7 +211,7 @@ run_reinstall() {
     # 添加执行权限
     chmod a+x InstallNET.sh
     
-    echo -e "${INFO}☑️ 脚本下载完成，准备执行..."
+    echo -e "${INFO}☑️  脚本下载完成，准备执行..."
     
     # 构建命令
     CMD="bash InstallNET.sh -${OS} ${VERSION} -port \"${SSH_PORT}\" -pwd '${SSH_PASSWORD}' -hostname \"${HOSTNAME}\""
@@ -224,7 +223,7 @@ run_reinstall() {
     echo -e "\n${INFO}📋 将执行以下命令:"
     echo "${CMD}"
     
-    echo -e "\n${WARN}⚠️ 重要提醒:"
+    echo -e "\n${WARN}${YELLOW}⚠️ 重要提醒:${NC}"
     echo "1. 系统重装后所有数据将丢失，请提前做好数据备份"
     echo "2. 脚本执行完毕后需使用 reboot 命令重启开始重装"
     echo "3. 请确认你的服务器安全组已放行 SSH 端口 ${SSH_PORT}"
