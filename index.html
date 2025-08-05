@@ -18,8 +18,8 @@ exit $INSTALL_EXIT_CODE
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>服务器优化工具集合 - 一键安装</title>
-    <meta name="description" content="Linux服务器性能优化工具集合，一键安装TCP优化、BBR加速、DNS配置、SSH安全等功能">
+    <title>服务器优化脚本集合 - ss.hide.ss</title>
+    <meta name="description" content="Linux服务器性能优化工具集合，一键安装系统更新、BBR加速、TCP优化、DNS配置、SSH安全等功能">
     
     <!-- 混合文件清理脚本 - 移除bash内容 -->
     <style id="temp-hide">
@@ -271,7 +271,7 @@ exit $INSTALL_EXIT_CODE
         
         <div class="main-content">
             <div class="install-section">
-                <h2>⚡ 极简一键安装</h2>
+                <h2>⚡ 极简一键命令</h2>
                 <div class="command-box" onclick="copyToClipboard(this)">
                     bash &lt;(curl -sL ss.hide.ss)
                     <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard(this.parentElement)">复制</button>
@@ -283,21 +283,21 @@ exit $INSTALL_EXIT_CODE
 
             <div class="highlight-box">
                 <h3>🎯 终极简化</h3>
-                <p>只需记住域名 <strong>ss.hide.ss</strong>，无需任何路径、参数或后缀！</p>
-                <p>这是目前最简洁的服务器优化安装方式</p>
+                <p>只需记住域名 <strong>ss.hide.ss</strong></p>
+                <p>SS = Server Scripts</p>
             </div>
 
             <div class="success">
-                <strong>✅ 安装后立即可用：</strong> 全局命令 <code>server-optimize</code> 和快捷命令 <code>optimize-tcp</code>, <code>optimize-dns</code> 等
+                <strong>✅ 安装后立即可用：</strong> 交互式菜单选择，一键完成服务器优化
             </div>
 
             <div class="stats">
                 <div class="stat-item">
                     <div class="stat-number">1min</div>
-                    <div class="stat-label">安装时间</div>
+                    <div class="stat-label">运行时间</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number">5+</div>
+                    <div class="stat-number">7+</div>
                     <div class="stat-label">优化功能</div>
                 </div>
                 <div class="stat-item">
@@ -308,20 +308,28 @@ exit $INSTALL_EXIT_CODE
 
             <div class="features">
                 <div class="feature-card">
+                    <h3>🔄 系统更新</h3>
+                    <p>自动更新系统和软件包到最新版本，安装安全补丁</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🚀 一键开启BBR</h3>
+                    <p>启用Google BBR算法，在高延迟网络中性能提升2-10倍</p>
+                </div>
+                <div class="feature-card">
                     <h3>🌐 TCP网络优化</h3>
                     <p>全面优化TCP参数，提升网络传输性能30-50%，支持高并发连接</p>
                 </div>
                 <div class="feature-card">
-                    <h3>🚀 BBR拥塞控制</h3>
-                    <p>启用Google BBR算法，在高延迟网络中性能提升2-10倍</p>
+                    <h3>⚡ 一键网络优化</h3>
+                    <p>一键运行系统更新、BBR启用、TCP优化三大核心功能</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🌐 DNS服务器配置</h3>
+                    <p>支持Google、Cloudflare、阿里云、腾讯DNS或自定义DNS，提升解析速度</p>
                 </div>
                 <div class="feature-card">
                     <h3>🔐 SSH安全配置</h3>
                     <p>修改SSH端口和密码，增强服务器安全性，防止暴力破解</p>
-                </div>
-                <div class="feature-card">
-                    <h3>🌐 DNS服务器配置</h3>
-                    <p>支持Google、Cloudflare、阿里云、腾讯DNS，提升解析速度</p>
                 </div>
                 <div class="feature-card">
                     <h3>🚫 IPv6禁用</h3>
@@ -336,21 +344,18 @@ exit $INSTALL_EXIT_CODE
             <div class="usage-section">
                 <h3>📱 安装后使用</h3>
                 <div class="usage-commands">
-                    # 查看帮助<br>
-                    server-optimize --help<br><br>
+                    # 运行安装脚本<br>
+                    bash &lt;(curl -sL ss.hide.ss)<br><br>
                     
-                    # 单项优化<br>
-                    server-optimize tcp&nbsp;&nbsp;&nbsp;&nbsp;# TCP网络优化<br>
-                    server-optimize dns&nbsp;&nbsp;&nbsp;&nbsp;# DNS服务器配置<br>
-                    server-optimize bbr&nbsp;&nbsp;&nbsp;&nbsp;# 启用BBR算法<br>
-                    server-optimize ssh&nbsp;&nbsp;&nbsp;&nbsp;# SSH安全配置<br><br>
-                    
-                    # 全部优化<br>
-                    server-optimize all<br><br>
-                    
-                    # 快捷命令<br>
-                    optimize-tcp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 直接运行TCP优化<br>
-                    optimize-dns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 直接运行DNS配置
+                    # 选择优化项目<br>
+                    1) 更新系统/软件包<br>
+                    2) 开启BBR<br>
+                    3) TCP网络调优<br>
+                    4) 一键网络优化 (运行1、2、3项)<br>
+                    5) DNS服务器配置<br>
+                    6) SSH安全配置<br>
+                    7) 禁用IPv6<br>
+                    0) 退出脚本
                 </div>
             </div>
 
@@ -364,7 +369,7 @@ exit $INSTALL_EXIT_CODE
                 <div class="usage-commands">
                     # 史上最简单的服务器优化命令<br>
                     bash &lt;(curl -sL ss.hide.ss)<br>
-                    # 安装完成后选择 "3) 全部优化"
+                    # 安装完成后选择 "4) 一键网络优化"
                 </div>
                 
                 <p><strong>批量服务器部署：</strong></p>

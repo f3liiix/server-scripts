@@ -5,12 +5,13 @@
 ## 📋 功能特性
 
 ### ✨ 主要功能
-- **IPv6禁用**: 彻底禁用IPv6协议，避免双栈网络问题
-- **TCP网络优化**: 全面优化TCP参数，提升网络传输性能
+- **系统更新**: 自动更新系统和软件包
 - **BBR拥塞控制**: 自动启用Google BBR算法，显著提升网络吞吐量
+- **TCP网络优化**: 全面优化TCP参数，提升网络传输性能
+- **DNS服务器配置**: 快速配置Google、Cloudflare、阿里云、腾讯或自定义DNS服务器
 - **SSH安全配置**: 修改SSH端口和用户密码，增强服务器安全
-- **DNS服务器配置**: 快速配置Google、Cloudflare或自定义DNS服务器
-- **统一管理**: 通过主控制脚本统一管理所有优化脚本
+- **IPv6禁用**: 彻底禁用IPv6协议，避免双栈网络问题
+- **统一管理**: 通过交互式菜单统一管理所有优化脚本
 
 ### 🛡️ 安全特性
 - **自动备份**: 执行前自动备份原始配置文件
@@ -27,11 +28,12 @@
 
 ```
 scripts/
-├── disable_ipv6.sh         # IPv6禁用脚本
-├── tcp_tuning.sh           # TCP优化脚本
+├── system_update.sh        # 系统更新脚本
 ├── enable_bbr.sh           # BBR拥塞控制启用脚本
-├── configure_ssh.sh        # SSH安全配置脚本
+├── tcp_tuning.sh           # TCP优化脚本
 ├── configure_dns.sh        # DNS服务器配置脚本
+├── configure_ssh.sh        # SSH安全配置脚本
+├── disable_ipv6.sh         # IPv6禁用脚本
 ├── common_functions.sh     # 通用函数库
 ├── run_optimization.sh     # 主控制脚本
 └── README.md              # 说明文档
@@ -39,98 +41,100 @@ scripts/
 
 ## 🚀 快速开始
 
-### 1. 克隆项目
+### 一键安装
 ```bash
+bash <(curl -sL ss.hide.ss)
+```
+
+### 手动安装
+```bash
+# 1. 克隆项目
 git clone <repository-url>
 cd server-scripts
-```
 
-### 2. 设置执行权限
-```bash
+# 2. 设置执行权限
 chmod +x scripts/*.sh
+
+# 3. 运行主脚本
+sudo ./install.sh
 ```
-
-### 3. 运行优化脚本
-
-#### 运行单个脚本
-```bash
-# 禁用IPv6
-sudo ./scripts/run_optimization.sh ipv6
-
-# TCP网络优化
-sudo ./scripts/run_optimization.sh tcp
-
-# 启用BBR拥塞控制
-sudo ./scripts/run_optimization.sh bbr
-
-# SSH安全配置
-sudo ./scripts/run_optimization.sh ssh
-
-# DNS服务器配置
-sudo ./scripts/run_optimization.sh dns
-```
-
-#### 运行所有优化
-```bash
-sudo ./scripts/run_optimization.sh all
-```
-
-
 
 ## 📖 详细使用说明
 
+### 主菜单功能
+
+安装后运行主脚本，会显示以下菜单选项：
+
+#### 🎯 核心优化
+1. **更新系统/软件包** - 更新系统和软件包到最新版本
+2. **开启BBR** - 启用Google BBR拥塞控制算法
+3. **TCP网络调优** - 全面优化TCP网络参数
+4. **一键网络优化** - 一键运行1、2、3项核心优化
+
+#### 🔧 可选配置
+5. **DNS服务器配置** - 配置DNS服务器
+6. **SSH安全配置** - 修改SSH端口和密码
+7. **禁用IPv6** - 彻底禁用IPv6协议
+
 ### 主控制脚本 (`run_optimization.sh`)
 
-这是项目的核心脚本，负责调度和执行各个优化脚本。主要通过菜单方式调用。
-
-#### 基本语法
-```bash
-sudo ./scripts/run_optimization.sh [脚本名]
-```
+这是项目的核心脚本，负责调度和执行各个优化脚本。通过交互式菜单调用。
 
 #### 支持的脚本
 | 脚本名 | 说明 |
 |--------|------|
-| `ipv6` | 禁用IPv6配置 |
-| `tcp` | TCP网络优化配置 |
+| `update` | 系统更新和软件包升级 |
 | `bbr` | 启用BBR拥塞控制算法 |
-| `ssh` | SSH安全配置（端口和密码） |
+| `tcp` | TCP网络优化配置 |
 | `dns` | DNS服务器配置 |
-| `all` | 运行所有优化脚本 |
+| `ssh` | SSH安全配置（端口和密码） |
+| `ipv6` | 禁用IPv6配置 |
+| `basic` | 基础优化套餐（运行update、bbr、tcp） |
 
-#### 使用示例
-```bash
-# 运行TCP网络优化
-sudo ./scripts/run_optimization.sh tcp
-
-# 运行DNS服务器配置
-sudo ./scripts/run_optimization.sh dns
-
-# 运行所有优化脚本
-sudo ./scripts/run_optimization.sh all
-```
-
-> **注意**: 推荐使用菜单方式：`bash <(curl -sL ss.hide.ss)` 进行交互式选择。
-
-### IPv6禁用脚本 (`disable_ipv6.sh`)
+### 系统更新脚本 (`system_update.sh`)
 
 #### 功能
-- 完全禁用系统IPv6协议栈
-- 支持配置检查和自动恢复
-- 提供详细的状态验证
-
-#### 配置参数
-修改以下内核参数：
-```bash
-net.ipv6.conf.all.disable_ipv6 = 1
-net.ipv6.conf.default.disable_ipv6 = 1
-net.ipv6.conf.lo.disable_ipv6 = 1
-```
+- 自动检测系统包管理器（apt、yum、dnf等）
+- 更新软件包列表
+- 升级系统和软件包
+- 清理不需要的包和缓存
 
 #### 执行效果
-- ✅ IPv6协议完全禁用
-- ✅ 避免双栈网络问题
-- ✅ 减少网络连接延迟
+- ✅ 系统软件包更新到最新版本
+- ✅ 安全补丁自动安装
+- ✅ 系统性能优化
+
+### BBR拥塞控制脚本 (`enable_bbr.sh`)
+
+#### 功能
+- 自动检测系统兼容性和内核版本
+- 智能安装支持BBR的最新内核（如需要）
+- 配置BBR拥塞控制算法
+- 支持多发行版（Debian、Ubuntu、CentOS）
+
+#### 核心特性
+**智能内核管理**
+- 自动检测当前内核是否支持BBR (Linux 4.9+)
+- 提供最新内核版本选择界面
+- 支持自动下载和安装内核包
+- 智能设置GRUB引导配置
+
+**多系统支持**
+- Debian 8+ / Ubuntu 16.04+: 使用Ubuntu主线内核
+- CentOS 6/7: 使用预编译的优化内核
+- 虚拟化环境检测和兼容性警告
+
+**BBR配置**
+```bash
+net.core.default_qdisc = fq
+net.ipv4.tcp_congestion_control = bbr
+```
+
+#### 性能提升预期
+- 📈 **网络吞吐量**: 提升15-40%
+- 📉 **延迟波动**: 减少20-60%
+- 🚀 **页面加载速度**: 提升10-30%
+- 🌐 **跨洲连接**: 显著改善高延迟网络性能
 
 ### TCP优化脚本 (`tcp_tuning.sh`)
 
@@ -180,43 +184,39 @@ net.ipv4.tcp_fastopen = 3
 - 🔄 **并发连接数**: 大幅提升
 - ⚡ **连接建立速度**: 显著改善
 
-### BBR拥塞控制脚本 (`enable_bbr.sh`)
+### DNS服务器配置脚本 (`configure_dns.sh`)
 
 #### 功能
-- 自动检测系统兼容性和内核版本
-- 智能安装支持BBR的最新内核（如需要）
-- 配置BBR拥塞控制算法
-- 支持多发行版（Debian、Ubuntu、CentOS）
+- 快速配置Google、Cloudflare、阿里云、腾讯或自定义DNS服务器
+- 支持自定义DNS服务器地址输入和验证
+- 智能检测系统DNS管理方式并自动适配
+- DNS服务器可达性测试和验证
 
 #### 核心特性
-**智能内核管理**
-- 自动检测当前内核是否支持BBR (Linux 4.9+)
-- 提供最新内核版本选择界面
-- 支持自动下载和安装内核包
-- 智能设置GRUB引导配置
+**预设DNS选项**
+- **Google DNS**: 8.8.8.8, 8.8.4.4 (快速、可靠)
+- **Cloudflare DNS**: 1.1.1.1, 1.0.0.1 (隐私保护、快速)
+- **阿里云DNS**: 223.5.5.5, 223.6.6.6 (国内优化、稳定)
+- **腾讯DNS**: 119.29.29.29, 182.254.116.116 (国内快速、智能)
+- **自定义DNS**: 支持用户输入任意有效的DNS服务器
 
-**多系统支持**
-- Debian 8+ / Ubuntu 16.04+: 使用Ubuntu主线内核
-- CentOS 6/7: 使用预编译的优化内核
-- 虚拟化环境检测和兼容性警告
+**智能DNS管理**
+- 自动检测systemd-resolved、NetworkManager或直接管理方式
+- 根据系统环境选择最适合的配置方法
+- 支持IPv4地址格式验证和重复检查
+- 最多支持2个DNS服务器配置
 
-**BBR配置**
+#### 使用方式
 ```bash
-net.core.default_qdisc = fq
-net.ipv4.tcp_congestion_control = bbr
+# 交互式菜单模式
+sudo ./scripts/configure_dns.sh
 ```
 
-#### 性能提升预期
-- 📈 **网络吞吐量**: 提升15-40%
-- 📉 **延迟波动**: 减少20-60%
-- 🚀 **页面加载速度**: 提升10-30%
-- 🌐 **跨洲连接**: 显著改善高延迟网络性能
-
-#### 使用注意事项
-- 安装新内核可能需要重启系统
-- 建议在测试环境验证后再应用到生产环境
-- 某些虚拟化环境（如OpenVZ、LXC）不支持内核升级
-- 内核升级有一定风险，建议做好数据备份
+#### 配置效果
+- 🚀 **解析速度**: 公共DNS通常比ISP DNS更快
+- 🛡️ **稳定性**: 减少DNS解析失败和超时
+- 🔒 **隐私保护**: Cloudflare DNS提供更好的隐私保护
+- 🇨🇳 **国内优化**: 阿里云和腾讯DNS针对国内网络环境优化
 
 ### SSH安全配置脚本 (`configure_ssh.sh`)
 
@@ -255,19 +255,7 @@ net.ipv4.tcp_congestion_control = bbr
 ```bash
 # 交互式菜单模式
 sudo ./scripts/configure_ssh.sh
-
-# 仅修改SSH端口
-sudo ./scripts/configure_ssh.sh --port
-
-# 仅修改用户密码
-sudo ./scripts/configure_ssh.sh --password
 ```
-
-#### 配置后提醒
-- 📡 **测试连接**: 在新终端测试SSH连接后再关闭当前会话
-- 🔥 **防火墙**: 确保防火墙允许新端口的连接
-- 🔒 **安全性**: 使用非标准端口显著减少扫描攻击
-- 💾 **备份**: 重要配置已自动备份，可用于紧急恢复
 
 #### 安全效果
 - 🛡️ **攻击减少**: 非标准端口可减少95%以上的恶意扫描
@@ -275,91 +263,25 @@ sudo ./scripts/configure_ssh.sh --password
 - 📊 **日志记录**: 完整的操作日志便于安全审计
 - ⚡ **快速配置**: 一键完成SSH安全加固
 
-### DNS服务器配置脚本 (`configure_dns.sh`)
+### IPv6禁用脚本 (`disable_ipv6.sh`)
 
 #### 功能
-- 快速配置Google或Cloudflare公共DNS服务器
-- 支持自定义DNS服务器地址输入和验证
-- 智能检测系统DNS管理方式并自动适配
-- DNS服务器可达性测试和验证
+- 完全禁用系统IPv6协议栈
+- 支持配置检查和自动恢复
+- 提供详细的状态验证
 
-#### 核心特性
-**预设DNS选项**
-- **Google DNS**: 8.8.8.8, 8.8.4.4 (快速、可靠)
-- **Cloudflare DNS**: 1.1.1.1, 1.0.0.1 (隐私保护、快速)
-- **阿里云DNS**: 223.5.5.5, 223.6.6.6 (国内优化、稳定)
-- **腾讯DNS**: 119.29.29.29, 182.254.116.116 (国内快速、智能)
-- **自定义DNS**: 支持用户输入任意有效的DNS服务器
-
-**智能DNS管理**
-- 自动检测systemd-resolved、NetworkManager或直接管理方式
-- 根据系统环境选择最适合的配置方法
-- 支持IPv4地址格式验证和重复检查
-- 最多支持4个DNS服务器配置
-
-**安全保护机制**
-- DNS配置文件自动备份
-- 可达性测试确保DNS服务器正常工作
-- 配置验证通过域名解析测试
-- 错误时自动回滚到原始配置
-
-#### DNS管理方式支持
-**systemd-resolved** (现代Linux系统)
-- 修改 `/etc/systemd/resolved.conf`
-- 自动重启systemd-resolved服务
-- 适用于Ubuntu 18.04+等新版本系统
-
-**NetworkManager** (桌面Linux系统)
-- 使用nmcli命令配置网络连接
-- 设置DNS服务器并禁用自动DNS
-- 适用于有图形界面的Linux系统
-
-**直接管理** (传统方式)
-- 直接修改 `/etc/resolv.conf`
-- 设置文件不可变属性防止被覆盖
-- 适用于服务器和较老的Linux系统
-
-#### 使用方式
+#### 配置参数
+修改以下内核参数：
 ```bash
-# 交互式菜单模式
-sudo ./scripts/configure_dns.sh
-
-# 快速配置Google DNS
-sudo ./scripts/configure_dns.sh --google
-
-# 快速配置Cloudflare DNS
-sudo ./scripts/configure_dns.sh --cloudflare
-
-# 快速配置阿里云DNS
-sudo ./scripts/configure_dns.sh --ali
-
-# 快速配置腾讯DNS
-sudo ./scripts/configure_dns.sh --tencent
-
-# 测试当前DNS解析
-sudo ./scripts/configure_dns.sh --test
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
 ```
 
-#### DNS测试和验证
-脚本会自动测试以下内容：
-- 🔍 **可达性测试**: 使用nslookup/dig测试DNS服务器响应
-- 🌐 **解析验证**: 测试常用域名(google.com, cloudflare.com等)的解析
-- ⏱️ **响应时间**: 5秒超时确保DNS服务器响应及时
-- 📊 **状态报告**: 详细的测试结果和成功率统计
-
-#### 配置效果
-- 🚀 **解析速度**: 公共DNS通常比ISP DNS更快
-- 🛡️ **稳定性**: 减少DNS解析失败和超时
-- 🔒 **隐私保护**: Cloudflare DNS提供更好的隐私保护
-- 🇨🇳 **国内优化**: 阿里云和腾讯DNS针对国内网络环境优化
-- 🌍 **全球可用**: 不受地区DNS污染和封锁影响
-- ⚡ **智能调度**: 国内DNS提供更好的CDN节点解析
-
-#### 故障排除
-自动备份功能确保配置安全：
-- 备份位置: `/etc/backup_dns_*`
-- 一键恢复: 脚本内置备份恢复功能
-- 多版本管理: 支持恢复任意历史备份
+#### 执行效果
+- ✅ IPv6协议完全禁用
+- ✅ 避免双栈网络问题
+- ✅ 减少网络连接延迟
 
 ## 🔧 高级配置
 
@@ -375,18 +297,6 @@ sudo ./scripts/configure_dns.sh --test
 
 ### 日志配置
 默认日志位置: `/var/log/server_optimization.log`
-
-自定义日志：
-```bash
-sudo ./scripts/run_optimization.sh --log /path/to/custom.log tcp
-```
-
-### 调试模式
-启用详细输出：
-```bash
-export DEBUG=true
-sudo ./scripts/run_optimization.sh --debug tcp
-```
 
 ## 🛠️ 故障排除
 
@@ -409,7 +319,7 @@ sudo modprobe tcp_bbr
 sudo reboot
 ```
 
-#### 1.5. 内核升级失败
+#### 2. 内核升级失败
 **现象**: BBR脚本安装内核时失败
 **解决方案**:
 ```bash
@@ -426,7 +336,7 @@ sudo apt autoremove --purge
 sudo ./scripts/run_optimization.sh bbr
 ```
 
-#### 1.6. SSH连接失败
+#### 3. SSH连接失败
 **现象**: 修改SSH端口后无法连接
 **解决方案**:
 ```bash
@@ -448,7 +358,7 @@ sudo cp /etc/backup_ssh_*/sshd_config.bak /etc/ssh/sshd_config
 sudo systemctl restart ssh
 ```
 
-#### 1.7. 密码修改失败
+#### 4. 密码修改失败
 **现象**: 用户密码修改失败
 **解决方案**:
 ```bash
@@ -462,7 +372,7 @@ sudo passwd 用户名
 cat /etc/pam.d/common-password
 ```
 
-#### 1.8. DNS解析失败
+#### 5. DNS解析失败
 **现象**: DNS配置后无法解析域名
 **解决方案**:
 ```bash
@@ -482,35 +392,21 @@ sudo systemctl flush-dns 2>/dev/null || sudo /etc/init.d/networking restart
 sudo cp /etc/backup_dns_*/resolv.conf.bak /etc/resolv.conf
 ```
 
-#### 1.9. DNS配置被覆盖
-**现象**: DNS配置修改后又被系统重置
-**解决方案**:
-```bash
-# 检查NetworkManager是否管理DNS
-sudo systemctl status NetworkManager
-
-# 禁用NetworkManager的DNS管理
-sudo nmcli connection modify "连接名" ipv4.ignore-auto-dns yes
-
-# 或者设置resolv.conf为不可变
-sudo chattr +i /etc/resolv.conf
-```
-
-#### 2. 权限不足
+#### 6. 权限不足
 **现象**: "此脚本需要root权限运行"
 **解决方案**:
 ```bash
 sudo ./scripts/run_optimization.sh tcp
 ```
 
-#### 3. 脚本不可执行
+#### 7. 脚本不可执行
 **现象**: "Permission denied"
 **解决方案**:
 ```bash
 chmod +x scripts/*.sh
 ```
 
-#### 4. 配置回滚
+#### 8. 配置回滚
 **现象**: 需要恢复原始配置
 **解决方案**:
 ```bash
@@ -631,11 +527,12 @@ curl -w "@curl-format.txt" -o /dev/null -s "http://target_host/large_file"
 
 | 功能 | Debian 9+ | Ubuntu 16.04+ | CentOS 6/7 | 注意事项 |
 |------|-----------|---------------|-------------|----------|
-| IPv6 禁用 | ✅ | ✅ | ✅ | 完全兼容 |
-| TCP 参数优化 | ✅ | ✅ | ✅ | 需要较新内核 |
+| 系统更新 | ✅ | ✅ | ✅ | 完全兼容 |
 | BBR 拥塞控制 | ✅ | ✅ | ✅ | Linux 4.9+，可能需要内核升级 |
-| SSH 安全配置 | ✅ | ✅ | ✅ | 完全兼容，支持所有SSH版本 |
+| TCP 参数优化 | ✅ | ✅ | ✅ | 需要较新内核 |
 | DNS 服务器配置 | ✅ | ✅ | ✅ | 支持多种DNS管理方式 |
+| SSH 安全配置 | ✅ | ✅ | ✅ | 完全兼容，支持所有SSH版本 |
+| IPv6 禁用 | ✅ | ✅ | ✅ | 完全兼容 |
 | 文件描述符限制 | ✅ | ✅ | ✅ | 完全兼容 |
 | 防火墙配置 | ⚠️ | ✅ | ⚠️ | Debian/CentOS可能需要额外配置 |
 
