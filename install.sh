@@ -110,6 +110,7 @@ show_system_info() {
     echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
     echo -e "操作系统 : ${WHITE}$distro $version${NC}"
     echo -e "内核版本 : ${WHITE}$kernel_version${NC}"
+    echo
 }
 
 # 检查系统兼容性
