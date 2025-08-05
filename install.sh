@@ -92,7 +92,7 @@ show_welcome() {
     echo "███████║███████║██╗██║  ██║██║██████╔╝███████╗██╗███████║███████║"
     echo "╚══════╝╚══════╝╚═╝╚═╝  ╚═╝╚═╝╚═════╝ ╚══════╝╚═╝╚══════╝╚══════╝"   
     echo "═════════════════════════════════════════════════════════════════"
-    echo "          服务器优化工具合集 - bash <(curl -sL ss.hide.ss)          "
+    echo "         服务器优化工具合集 - bash <(curl -sL ss.hide.ss)           "
     echo -e "${NC}"
     echo
 }
@@ -110,7 +110,6 @@ show_system_info() {
     echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
     echo -e "操作系统 : ${WHITE}$distro $version${NC}"
     echo -e "内核版本 : ${WHITE}$kernel_version${NC}"
-    echo
 }
 
 # 检查系统兼容性
@@ -177,7 +176,6 @@ install_tools() {
     # 设置权限
     find . -name "*.sh" -exec chmod +x {} \;
     chown -R root:root "$INSTALL_DIR" 2>/dev/null || true
-    echo
 }
 
 # 验证安装
@@ -245,18 +243,18 @@ interactive_menu() {
             echo "███████║███████║██╗██║  ██║██║██████╔╝███████╗██╗███████║███████║"
             echo "╚══════╝╚══════╝╚═╝╚═╝  ╚═╝╚═╝╚═════╝ ╚══════╝╚═╝╚══════╝╚══════╝"   
             echo "═════════════════════════════════════════════════════════════════"
-            echo "          服务器优化工具合集 - bash <(curl -sL ss.hide.ss)          "
+            echo "         服务器优化工具合集 - bash <(curl -sL ss.hide.ss)           "
             echo -e "${NC}"
             echo
             show_system_info
         fi
         
-        echo -e "${CYAN}🛠️  功能菜单${NC}"
+        echo -e "${GREEN}🛠️  功能菜单${NC}"
         echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
         echo -e "  ${GREEN}1${NC}) 🔄 更新系统/软件包      ${GRAY}# 推荐${NC}"
         echo -e "  ${GREEN}2${NC}) 🚀 开启BBR              ${GRAY}# 推荐${NC}"
         echo -e "  ${GREEN}3${NC}) 🌐 TCP网络调优          ${GRAY}# 推荐${NC}"
-        echo -e "  ${GREEN}4${NC}) 🛜 一键网络优化         ${GRAY}# 一键运行1、2、3项${NC}"
+        echo -e "  ${GREEN}4${NC}) 🛜 一键网络优化          ${GRAY}# 一键运行1、2、3项${NC}"
         echo -e "  ${DARK_GRAY}───────────────────────────────────────────────────────────────${NC}"
         echo -e "  ${GREEN}5${NC}) 🌍 DNS服务器配置        ${GRAY}# 修改服务器DNS${NC}"
         echo -e "  ${GREEN}6${NC}) 🔐 SSH安全配置          ${GRAY}# SSH端口和密码修改${NC}"
