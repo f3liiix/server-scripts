@@ -539,14 +539,12 @@ main() {
     # 1. 检查root权限
     if ! check_root; then
         echo -e "\r${RED}[错误]${NC} 权限检查失败，请使用root权限运行此脚本         "
-        end_script_timer
         exit 1
     fi
     
     # 2. 系统兼容性检查
     if ! check_system_compatibility >/dev/null 2>&1; then
         echo -e "\r${RED}[错误]${NC} 系统兼容性检查失败                           "
-        end_script_timer
         exit 1
     fi
     
@@ -558,7 +556,6 @@ main() {
     # 4. 创建备份
     if ! create_backup >/dev/null 2>&1; then
         echo -e "\r${RED}[错误]${NC} 创建备份失败                                  "
-        end_script_timer
         exit 1
     fi
     
@@ -566,13 +563,12 @@ main() {
     echo -e "\r${GREEN}[成功]${NC} 初始化完成                                     "
     
     # 5. 设置错误处理
-    trap 'rollback_changes; end_script_timer; exit 1' ERR
+    trap 'rollback_changes; exit 1' ERR
     
     # 6. 应用TCP优化
     echo -ne "${CYAN}[信息]${NC} 正在应用TCP优化配置..."
     if ! apply_tcp_optimization >/dev/null 2>&1; then
         echo -e "\r${RED}[错误]${NC} TCP优化配置应用失败                           "
-        end_script_timer
         exit 1
     fi
     echo -e "\r${GREEN}[成功]${NC} TCP优化配置应用完成                           "
@@ -581,7 +577,6 @@ main() {
     echo -ne "${CYAN}[信息]${NC} 正在应用文件描述符优化..."
     if ! apply_ulimit_optimization >/dev/null 2>&1; then
         echo -e "\r${RED}[错误]${NC} 文件描述符优化配置应用失败                     "
-        end_script_timer
         exit 1
     fi
     echo -e "\r${GREEN}[成功]${NC} 文件描述符优化配置应用完成                   "
@@ -590,7 +585,6 @@ main() {
     echo -ne "${CYAN}[信息]${NC} 正在应用和验证配置..."
     if ! apply_and_verify_config >/dev/null 2>&1; then
         echo -e "\r${RED}[错误]${NC} 配置应用和验证失败                             "
-        end_script_timer
         exit 1
     fi
     echo -e "\r${GREEN}[成功]${NC} 配置应用和验证完成                             "

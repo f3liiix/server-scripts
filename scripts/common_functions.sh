@@ -95,58 +95,6 @@ log_step() {
     echo "[$timestamp] [STEP] $message" >> "$LOG_FILE" 2>/dev/null || true
 }
 
-# --- 进度和时间统计函数 ---
-
-# 开始脚本执行计时
-start_script_timer() {
-    SCRIPT_START_TIME=$(date +%s)
-    log_info "脚本开始执行，时间: $(date)"
-}
-
-# 结束脚本执行计时并显示总耗时
-end_script_timer() {
-    if [[ $SCRIPT_START_TIME -gt 0 ]]; then
-        local end_time=$(date +%s)
-        local duration=$((end_time - SCRIPT_START_TIME))
-        local minutes=$((duration / 60))
-        local seconds=$((duration % 60))
-        
-        if [[ $minutes -gt 0 ]]; then
-            log_info "脚本执行完成，总耗时: ${minutes}分${seconds}秒"
-        else
-            log_info "脚本执行完成，总耗时: ${seconds}秒"
-        fi
-    fi
-}
-
-# 开始任务计时
-start_task_timer() {
-    local task_name="$1"
-    CURRENT_TASK="$task_name"
-    TASK_START_TIME=$(date +%s)
-    log_step "开始执行任务: $task_name"
-}
-
-# 结束任务计时并显示耗时
-end_task_timer() {
-    if [[ $TASK_START_TIME -gt 0 ]] && [[ -n "$CURRENT_TASK" ]]; then
-        local end_time=$(date +%s)
-        local duration=$((end_time - TASK_START_TIME))
-        local minutes=$((duration / 60))
-        local seconds=$((duration % 60))
-        
-        if [[ $minutes -gt 0 ]]; then
-            log_success "任务完成: $CURRENT_TASK (耗时: ${minutes}分${seconds}秒)"
-        else
-            log_success "任务完成: $CURRENT_TASK (耗时: ${seconds}秒)"
-        fi
-        
-        # 重置任务计时器
-        CURRENT_TASK=""
-        TASK_START_TIME=0
-    fi
-}
-
 # 显示进度条
 show_progress() {
     local duration="$1"  # 总持续时间（秒）
