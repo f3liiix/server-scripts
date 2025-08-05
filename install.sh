@@ -231,7 +231,7 @@ run_optimization() {
     local main_script="$INSTALL_DIR/scripts/run_optimization.sh"
     
     if [[ -x "$main_script" ]]; then
-        if ! "$main_script" "$option"; then
+        if ! bash "$main_script" "$option"; then
             error "优化脚本执行失败，但将继续运行"
             return 1
         fi
@@ -285,71 +285,43 @@ interactive_menu() {
                 echo
                 echo -e "${BLUE}▶▶▶ 正在执行 [更新系统及软件包]${NC}"
                 echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
-                if run_optimization "update"; then
-                    # 子脚本正常退出，设置显示标题框并继续
-                    show_header="true"
-                    continue
-                fi
+                run_optimization "update"
                 ;;
             2)
                 echo
                 echo -e "${BLUE}▶▶▶ 正在执行 [一键开启BBR]${NC}"
                 echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
-                if run_optimization "bbr"; then
-                    # 子脚本正常退出，设置显示标题框并继续
-                    show_header="true"
-                    continue
-                fi
+                run_optimization "bbr"
                 ;;
             3)
                 echo
                 echo -e "${BLUE}▶▶▶ 正在执行 [TCP网络调优]${NC}"
                 echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
-                if run_optimization "tcp"; then
-                    # 子脚本正常退出，设置显示标题框并继续
-                    show_header="true"
-                    continue
-                fi
+                run_optimization "tcp"
                 ;;
             4)
                 echo
                 echo -e "${BLUE}▶▶▶ 正在执行 [基础优化套餐]${NC}"
                 echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
-                if run_optimization "basic"; then
-                    # 子脚本正常退出，设置显示标题框并继续
-                    show_header="true"
-                    continue
-                fi
+                run_optimization "basic"
                 ;;
             5)
                 echo
                 echo -e "${BLUE}▶▶▶ 正在执行 [DNS服务器配置]${NC}"
                 echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
-                if run_optimization "dns"; then
-                    # 子脚本正常退出，设置显示标题框并继续
-                    show_header="true"
-                    continue
-                fi
+                run_optimization "dns"
                 ;;
             6)
                 echo
                 echo -e "${BLUE}▶▶▶ 正在执行 [SSH安全配置]${NC}"
                 echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
-                if run_optimization "ssh"; then
-                    # 子脚本正常退出，设置显示标题框并继续
-                    show_header="true"
-                    continue
-                fi
+                run_optimization "ssh"
                 ;;
             7)
                 echo
                 echo -e "${BLUE}▶▶▶ 正在执行 [禁用IPv6]${NC}"
                 echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
-                if run_optimization "ipv6"; then
-                    # 子脚本正常退出，设置显示标题框并继续
-                    show_header="true"
-                    continue
-                fi
+                run_optimization "ipv6"
                 ;;
             0)
                 echo
