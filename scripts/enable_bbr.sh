@@ -485,7 +485,6 @@ verify_bbr_status() {
             echo "BBR模块状态: ⚠️ 未检测到模块（可能内置）"
         fi
         echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
-        echo
         
         return 0
     else

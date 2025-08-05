@@ -466,7 +466,8 @@ show_optimization_results() {
     log_step "显示优化结果..."
     
     echo
-    echo "=== 🚀 TCP优化配置完成 ==="
+    echo -e "${GREEN}🌐 TCP优化配置完成${NC}"
+    echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
     
     # 显示当前拥塞控制算法
     if command -v sysctl >/dev/null 2>&1; then
@@ -484,17 +485,18 @@ show_optimization_results() {
         log_warning "BBR模块未激活（可能需要重启或手动加载）"
     fi
     
-    echo "=========================="
+    echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
 }
 
 # 显示后续建议
 show_recommendations() {
     echo
-    echo "=== 📋 优化后建议 ==="
+    echo -e "${GREEN}📋 优化后建议${NC}"
+    echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
     echo "1. 重启系统以确保所有优化完全生效"
     echo "2. 监控系统性能和网络连接状态"
     echo "3. 如需回滚，使用备份文件: $BACKUP_DIR"
-    echo "====================="
+    echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
 }
 
 # 错误处理和回滚
@@ -529,11 +531,8 @@ rollback_changes() {
 # 主程序
 main() {
     echo
-    echo -e "${BLUE}🌐 TCP网络调优工具${NC}"
-    echo -e "${DARK_GRAY}────────────────────────────────────────${NC}"
-    
-    # 开始脚本计时
-    start_script_timer
+    echo -e "${GREEN}🌐 TCP网络调优工具${NC}"
+    echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
     
     # 1. 检查root权限
     if ! check_root; then
@@ -610,9 +609,6 @@ main() {
     
     log_success "TCP网络调优完成！"
     echo
-    
-    # 结束脚本计时
-    end_script_timer
 }
 
 # 执行主程序
