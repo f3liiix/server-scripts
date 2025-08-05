@@ -27,7 +27,7 @@ check_wget() {
 # 获取用户选择的操作系统
 select_os() {
     while true; do
-        echo -e "\n${GREEN}💿 请选择要安装的操作系统:"
+        echo -e "\n${GREEN}💿 请选择要安装的操作系统:${NC}"
         echo
         echo "  1) Debian"
         echo "  2) Ubuntu"
@@ -51,7 +51,7 @@ select_version() {
     while true; do
         case "${OS}" in
             "debian")
-                echo -e "\n${GREEN}💿 请选择 Debian 版本:"
+                echo -e "\n${GREEN}💿 请选择 Debian 版本:${NC}"
                 echo
                 echo "  1) Debian 11 (bullseye)"
                 echo "  2) Debian 12 (bookworm) [默认]"
@@ -65,7 +65,7 @@ select_version() {
                 esac
                 ;;
             "ubuntu")
-                echo -e "\n${GREEN}💿 请选择 Ubuntu 版本:"
+                echo -e "\n${GREEN}💿 请选择 Ubuntu 版本:${NC}"
                 echo
                 echo "  1) Ubuntu 20.04 (focal)"
                 echo "  2) Ubuntu 22.04 (jammy)"
@@ -81,7 +81,7 @@ select_version() {
                 esac
                 ;;
             "centos")
-                echo -e "\n${GREEN}💿 请选择 CentOS 版本:"
+                echo -e "\n${GREEN}💿 请选择 CentOS 版本:${NC}"
                 echo
                 echo "  1) CentOS 7"
                 echo "  2) CentOS 8 [默认]"
@@ -97,7 +97,7 @@ select_version() {
                 esac
                 ;;
             "alpine")
-                echo -e "\n${GREEN}💿 请选择 Alpine 版本:"
+                echo -e "\n${GREEN}💿 请选择 Alpine 版本:${NC}"
                 echo
                 echo "  1) Alpine 3.16"
                 echo "  2) Alpine 3.17"
