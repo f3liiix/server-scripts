@@ -534,81 +534,83 @@ main() {
     echo -e "${GREEN}🌐 TCP网络调优工具${NC}"
     echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
     
+    # 动态显示初始化过程
+    echo -ne "${CYAN}[信息]${NC} 正在初始化TCP网络调优..."
+    
     # 1. 检查root权限
     if ! check_root; then
+        echo -e "\r${RED}[错误]${NC} 权限检查失败，请使用root权限运行此脚本         "
         end_script_timer
         exit 1
     fi
     
     # 2. 系统兼容性检查
-    start_task_timer "系统兼容性检查"
-    check_system_compatibility
-    end_task_timer
-    
-    # 3. 内核版本检查
-    start_task_timer "内核版本检查"
-    check_kernel_version "$MIN_KERNEL_VERSION" || log_warning "建议升级内核以获得最佳性能"
-    end_task_timer
-    
-    # 4. 创建备份
-    start_task_timer "创建配置备份"
-    if ! create_backup; then
-        log_error "创建备份失败"
+    if ! check_system_compatibility >/dev/null 2>&1; then
+        echo -e "\r${RED}[错误]${NC} 系统兼容性检查失败                           "
         end_script_timer
         exit 1
     fi
-    end_task_timer
+    
+    # 3. 内核版本检查
+    if ! check_kernel_version "$MIN_KERNEL_VERSION" >/dev/null 2>&1; then
+        echo -e "\r${YELLOW}[警告]${NC} 建议升级内核以获得最佳性能                    "
+    fi
+    
+    # 4. 创建备份
+    if ! create_backup >/dev/null 2>&1; then
+        echo -e "\r${RED}[错误]${NC} 创建备份失败                                  "
+        end_script_timer
+        exit 1
+    fi
+    
+    # 初始化完成
+    echo -e "\r${GREEN}[成功]${NC} 初始化完成                                     "
     
     # 5. 设置错误处理
     trap 'rollback_changes; end_script_timer; exit 1' ERR
     
     # 6. 应用TCP优化
-    start_task_timer "应用TCP优化配置"
-    if ! apply_tcp_optimization; then
-        log_error "TCP优化配置应用失败"
+    echo -ne "${CYAN}[信息]${NC} 正在应用TCP优化配置..."
+    if ! apply_tcp_optimization >/dev/null 2>&1; then
+        echo -e "\r${RED}[错误]${NC} TCP优化配置应用失败                           "
         end_script_timer
         exit 1
     fi
-    end_task_timer
+    echo -e "\r${GREEN}[成功]${NC} TCP优化配置应用完成                           "
     
     # 7. 应用文件描述符优化
-    start_task_timer "应用文件描述符优化"
-    if ! apply_ulimit_optimization; then
-        log_error "文件描述符优化配置应用失败"
+    echo -ne "${CYAN}[信息]${NC} 正在应用文件描述符优化..."
+    if ! apply_ulimit_optimization >/dev/null 2>&1; then
+        echo -e "\r${RED}[错误]${NC} 文件描述符优化配置应用失败                     "
         end_script_timer
         exit 1
     fi
-    end_task_timer
+    echo -e "\r${GREEN}[成功]${NC} 文件描述符优化配置应用完成                   "
     
     # 8. 应用配置
-    start_task_timer "应用并验证系统配置"
-    if ! apply_and_verify_config; then
-        log_error "配置应用和验证失败"
+    echo -ne "${CYAN}[信息]${NC} 正在应用和验证配置..."
+    if ! apply_and_verify_config >/dev/null 2>&1; then
+        echo -e "\r${RED}[错误]${NC} 配置应用和验证失败                             "
         end_script_timer
         exit 1
     fi
-    end_task_timer
+    echo -e "\r${GREEN}[成功]${NC} 配置应用和验证完成                             "
     
     # 9. 配置防火墙
-    start_task_timer "配置防火墙规则"
-    configure_firewall
-    end_task_timer
+    echo -ne "${CYAN}[信息]${NC} 正在配置防火墙..."
+    configure_firewall >/dev/null 2>&1
+    echo -e "\r${GREEN}[成功]${NC} 防火墙配置完成                                 "
     
     # 10. 显示结果
-    start_task_timer "显示优化结果"
     show_optimization_results
-    end_task_timer
     
     # 11. 显示建议
-    start_task_timer "显示后续建议"
     show_recommendations
-    end_task_timer
     
     # 清除错误陷阱
     trap - ERR
     
     log_success "TCP网络调优完成！"
-    echo
 }
 
 # 执行主程序
