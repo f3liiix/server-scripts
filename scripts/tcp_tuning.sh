@@ -247,6 +247,7 @@ clean_invalid_conntrack_config() {
 
 # 应用TCP优化配置
 apply_tcp_optimization() {
+    log_step "应用TCP优化配置..."
     
     # 先清理可能存在的无效配置
     if ! clean_invalid_conntrack_config; then
@@ -339,6 +340,8 @@ EOF
 
 # 应用文件描述符限制优化
 apply_ulimit_optimization() {
+    log_step "应用文件描述符限制优化..."
+    
     # 检查是否已存在配置
     if grep -q "文件描述符限制 (auto-configured)" "$LIMITS_CONF" 2>/dev/null; then
         log_warning "检测到已存在的文件描述符配置，将跳过重复配置"
@@ -369,6 +372,8 @@ EOF
 
 # 应用配置并验证
 apply_and_verify_config() {
+    log_step "应用并验证系统配置..."
+    
     # 先测试配置的有效性，过滤掉无效参数
     local temp_output
     temp_output=$(sysctl -p 2>&1) || true
