@@ -130,9 +130,6 @@ check_system() {
 
 # 下载并安装
 install_tools() {
-    echo -e "${CYAN}📥 正在下载所需文件...${NC}"
-    echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
-    
     # 创建安装目录
     mkdir -p "$INSTALL_DIR"
     cd "$INSTALL_DIR"
@@ -159,23 +156,22 @@ install_tools() {
         mkdir -p "$dir"
         
         # 显示进度
-        echo -ne "${CYAN}[${current}/${total_files}]${NC} 正在下载 ${WHITE}$file${NC} ... "
+        echo -ne "\r${CYAN}[信息]${NC} 正在下载文件 [$current/$total_files] ${WHITE}$file${NC} ... "
         
         # 静默下载，只在失败时输出错误
         if curl -fsSL "$RAW_BASE/$file" -o "$file" 2>/dev/null; then
-            echo -e "${GREEN}✓${NC}"
+            continue
         else
-            echo -e "${RED}✗${NC}"
-            error "下载失败: $file"
+            echo -e "\r${RED}[错误]${NC} 下载失败: $file ${RED}✗${NC}"
             return 1
         fi
     done
 
-    echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
-    
     # 设置权限
     find . -name "*.sh" -exec chmod +x {} \;
     chown -R root:root "$INSTALL_DIR" 2>/dev/null || true
+    
+    return 0
 }
 
 # 验证安装
@@ -192,19 +188,19 @@ verify_installation() {
 
 # 系统初始化（下载和验证）
 initialize_system() {
-    log "正在初始化脚本..."
+    echo -ne "${CYAN}[信息]${NC} 正在初始化脚本..."
     
     # 执行下载
     if ! install_tools; then
-        error "脚本初始化失败 ${RED}✗${NC}"
+        echo -e "\r${RED}[错误]${NC} 脚本初始化失败 ${RED}✗${NC}"
         exit 1
     fi
     
     # 验证安装
     if verify_installation; then
-        success "脚本初始化完成 ${GREEN}✓${NC}"
+        echo -e "\r${GREEN}[成功]${NC} 脚本初始化完成 ${GREEN}✓${NC}"
     else
-        error "脚本初始化失败 ${RED}✗${NC}"
+        echo -e "\r${RED}[错误]${NC} 脚本初始化失败 ${RED}✗${NC}"
         exit 1
     fi
 
