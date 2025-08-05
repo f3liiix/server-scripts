@@ -243,7 +243,7 @@ run_reinstall() {
         rm -f InstallNET.sh
         return 0
     else
-        echo -e "\n${INFO}${CYAN}开始执行系统重装...${NC}"
+        echo -e "\n${INFO}${CYAN}开始运行重装脚本...${NC}"
         # 执行重装命令，但不直接使用 eval
         # 这样可以避免当前 shell 被第三方脚本退出影响
         bash InstallNET.sh -${OS} ${VERSION} -port "${SSH_PORT}" -pwd '${SSH_PASSWORD}' -hostname "${HOSTNAME}" ${ENABLE_BBR:+--bbr}
