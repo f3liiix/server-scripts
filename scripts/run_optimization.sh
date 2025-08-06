@@ -24,8 +24,8 @@ fi
 readonly SCRIPT_VERSION="2.0"
 
 # 可用的优化脚本映射
-SCRIPT_KEYS=("update" "ipv6" "tcp" "bbr" "ssh" "dns" "reinstall")
-SCRIPT_FILES=("system_update.sh" "disable_ipv6.sh" "tcp_tuning.sh" "enable_bbr.sh" "configure_ssh.sh" "configure_dns.sh" "reinstall_system.sh")
+SCRIPT_KEYS=("update" "ipv6" "tcp" "bbr" "ssh" "dns" "reinstall" "bt")
+SCRIPT_FILES=("system_update.sh" "disable_ipv6.sh" "tcp_tuning.sh" "enable_bbr.sh" "configure_ssh.sh" "configure_dns.sh" "reinstall_system.sh" "install_bt.sh")
 
 # --- 核心函数 ---
 
@@ -101,7 +101,8 @@ run_all_scripts() {
     
     for script_key in "${SCRIPT_KEYS[@]}"; do
         # 跳过 reinstall 脚本，因为它会重装系统
-        if [[ "$script_key" == "reinstall" ]]; then
+        # 跳过 bt 脚本，因为它需要交互
+        if [[ "$script_key" == "reinstall" ]] || [[ "$script_key" == "bt" ]]; then
             continue
         fi
         
