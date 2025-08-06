@@ -77,7 +77,7 @@ log_success() {
 log_warning() {
     local message="$1"
     local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-    echo -e "${YELLOW}⚠️ [注意]${NC} $message"
+    echo -e "${YELLOW}✴️ [注意]${NC} $message"
     echo "[$timestamp] [WARNING] $message" >> "$LOG_FILE" 2>/dev/null || true
 }
 

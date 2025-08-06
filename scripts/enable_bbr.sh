@@ -496,15 +496,13 @@ verify_bbr_status() {
 # 显示后续建议
 show_bbr_recommendations() {
     echo
-    echo "=== 📋 BBR启用后建议 ==="
+    echo -e "${GREEN}📋 BBR启用后建议${NC}"
+    echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
     echo "1. 重启系统以确保BBR完全生效（如果安装了新内核）"
     echo "2. 监控网络性能变化，BBR通常能提升15-25%的吞吐量"
-    echo "3. 使用以下命令验证BBR状态:"
-    echo "   sysctl net.ipv4.tcp_congestion_control"
-    echo "   lsmod | grep bbr"
-    echo "4. 进行网络性能测试对比优化效果"
-    echo "5. 如遇问题，可通过备份文件恢复配置"
-    echo "======================="
+    echo "3. 如遇问题，可通过备份文件恢复配置"
+    echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
+    echo
 }
 
 # 询问是否重启系统
@@ -568,7 +566,7 @@ main() {
         if check_bbr_available; then
             log_info "BBR模块可用，直接配置启用"
         else
-            log_warning "BBR模块不可用，但内核版本支持，尝试配置"
+            log_warning "BBR模块未启用，但内核版本支持，尝试配置"
         fi
     else
         log_warning "当前内核版本不支持BBR，需要升级内核"
@@ -599,7 +597,7 @@ main() {
         if [[ "$kernel_upgrade_needed" == true ]]; then
             prompt_reboot
         fi
-        log_success "BBR启用完成！"
+        log_success "开启BBR完成！"
         return 0
     else
         if [[ "$kernel_upgrade_needed" == true ]]; then

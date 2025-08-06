@@ -158,7 +158,7 @@ cleanup_system() {
             ;;
     esac
     
-    log_success "系统清理完成"
+    log_success "系统缓存已经清理"
 }
 
 # 显示更新总结
@@ -170,38 +170,7 @@ show_update_summary() {
     log_success "系统软件包已升级"
     log_success "系统缓存已经清理"
     
-    # 检查是否需要重启
-    check_reboot_required "$pkg_manager"
-    
     echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
-}
-
-# 检查是否需要重启
-check_reboot_required() {
-    local pkg_manager="$1"
-    
-    case "$pkg_manager" in
-        "apt")
-            if [[ -f /var/run/reboot-required ]]; then
-                echo
-                log_warning "⚠️ 系统更新完成，建议重启服务器以应用所有更改"
-                log_info "重启命令: sudo reboot"
-            fi
-            ;;
-        "yum"|"dnf")
-            # 检查是否有内核更新
-            if needs-restarting -r >/dev/null 2>&1; then
-                echo
-                log_warning "⚠️ 系统更新完成，建议重启服务器以应用所有更改"
-                log_info "重启命令: sudo reboot"
-            fi 2>/dev/null || true
-            ;;
-        *)
-            # 对于其他系统，给出通用建议
-            echo
-            log_info "💡 如果更新了内核或重要系统组件，建议重启服务器"
-            ;;
-    esac
 }
 
 # 主程序

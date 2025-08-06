@@ -86,6 +86,7 @@ detect_dns_manager() {
 # 获取当前DNS配置
 get_current_dns() {
     local current_dns=()
+    local unique_dns=()
     
     if [[ -f "$RESOLV_CONF" ]]; then
         # 从resolv.conf读取nameserver
@@ -107,7 +108,24 @@ get_current_dns() {
         fi
     fi
     
-    printf '%s\n' "${current_dns[@]}"
+    # 去重处理
+    local dns
+    for dns in "${current_dns[@]}"; do
+        local is_duplicate=false
+        local unique
+        for unique in "${unique_dns[@]}"; do
+            if [[ "$dns" == "$unique" ]]; then
+                is_duplicate=true
+                break
+            fi
+        done
+        
+        if [[ "$is_duplicate" == false ]]; then
+            unique_dns+=("$dns")
+        fi
+    done
+    
+    printf '%s\n' "${unique_dns[@]}"
 }
 
 # 验证IPv4地址格式
@@ -583,13 +601,13 @@ show_main_menu() {
     
     echo
     echo "请选择DNS服务器："
-    echo "1) Cloudflare DNS   - 1.1.1.1, 1.0.0.1"
-    echo "2) Google DNS       - 8.8.8.8, 8.8.4.4"
-    echo "3) 阿里DNS          - 223.5.5.5, 223.6.6.6"
-    echo "4) 腾讯DNS          - 119.29.29.29, 182.254.116.116"
-    echo "5) 自定义DNS服务器"
-    echo "6) 恢复DNS配置备份"
-    echo "0) 退出DNS配置工具"
+    echo "  1) Cloudflare DNS   - 1.1.1.1, 1.0.0.1"
+    echo "  2) Google DNS       - 8.8.8.8, 8.8.4.4"
+    echo "  3) 阿里DNS          - 223.5.5.5, 223.6.6.6"
+    echo "  4) 腾讯DNS          - 119.29.29.29, 182.254.116.116"
+    echo "  5) 自定义DNS服务器"
+    echo "  6) 恢复DNS配置备份"
+    echo "  0) 退出DNS配置工具"
     echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
     echo
 }
