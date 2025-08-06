@@ -815,8 +815,6 @@ main() {
                 fi
                 ;;
             0)
-                log_info "退出DNS配置工具"
-                echo
                 exit 0
                 ;;
             *)
