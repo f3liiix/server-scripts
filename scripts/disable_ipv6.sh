@@ -25,6 +25,7 @@ fi
 
 # --- 配置项 ---
 readonly SYSCTL_CONF="${SYSCTL_CONF:-/etc/sysctl.conf}"
+readonly BACKUP_SUFFIX=".bak.$(date +%Y%m%d_%H%M%S)"
 readonly BACKUP_DIR="${IPV6_BACKUP_DIR}_$(date +%Y%m%d_%H%M%S)"
 readonly IPV6_DISABLE_CONFIG=(
     "net.ipv6.conf.all.disable_ipv6 = 1"
@@ -76,8 +77,16 @@ backup_config() {
             return 1
         fi
     else
-        log_error "配置文件 $SYSCTL_CONF 不存在！"
-        return 1
+        log_warning "配置文件 $SYSCTL_CONF 不存在，将创建新文件"
+        touch "$SYSCTL_CONF"
+        local backup_file="${SYSCTL_CONF}${BACKUP_SUFFIX}"
+        if cp "$SYSCTL_CONF" "$backup_file"; then
+            log_info "已创建配置备份: $backup_file"
+            echo "$backup_file"
+        else
+            log_error "无法创建配置备份: $backup_file"
+            return 1
+        fi
     fi
 }
 
@@ -219,63 +228,45 @@ rollback_changes() {
     fi
 }
 
-# --- 主程序 ---
+# 主程序
 main() {
     echo
-    echo -e "${GREEN}🚫 IPv6禁用工具${NC}"
+    echo -e "${RED}🚫 IPv6禁用工具${NC}"
     echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
     
-    # 1. 检查root权限
+    # 检查root权限
     if ! check_root; then
         exit 1
     fi
     
-    # 2. 检查系统兼容性
-    check_compatibility
+    # 检测发行版
+    local distro
+    distro=$(detect_distro)
+    log_info "检测到支持的系统: $distro"
     
-    # 3. 检查当前IPv6状态
-    if is_ipv6_disabled; then
-        log_info "IPv6 已处于禁用状态"
-        verify_ipv6_disabled
-        return 0
+    # 确认操作
+    if ! confirm_action "确定要禁用IPv6吗？" "Y"; then
+        log_info "用户取消了禁用IPv6操作"
+        exit 0
     fi
     
-    # 4. 创建备份
-    local backup_file
-    backup_file=$(backup_config) || {
-        log_error "创建备份失败"
-        exit 1
-    }
-    
-    # 5. 设置错误处理
-    trap "rollback_changes '$backup_file'; exit 1" ERR
-    
-    # 6. 添加配置
-    if ! add_ipv6_config; then
-        log_error "添加IPv6配置失败"
-        exit 1
-    fi
-    
-    # 7. 应用配置
-    if ! apply_config; then
-        log_error "应用IPv6配置失败"
-        exit 1
-    fi
-    
-    # 8. 验证结果
-    if verify_ipv6_disabled; then
-        show_recommendations
-        log_success "IPv6 禁用操作完成！"
+    # 执行禁用IPv6步骤
+    if backup_config && \
+       disable_ipv6 && \
+       apply_sysctl && \
+       verify_ipv6_disabled; then
         echo
+        log_success "IPv6已成功禁用！"
+        log_info "请重启系统以完全生效"
         return 0
     else
-        log_error "IPv6 禁用失败，请检查系统日志"
+        echo
+        log_error "禁用IPv6过程中出现错误"
         return 1
     fi
-    
-    # 清除错误陷阱
-    trap - ERR
 }
 
 # 执行主程序
-main "$@"
+if ! main "$@"; then
+    exit 1
+fi
