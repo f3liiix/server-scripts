@@ -273,39 +273,42 @@ interactive_menu() {
                 echo
                 echo -e "${CYAN}▶▶▶ 正在执行 [更新系统及软件包]${NC}"
                 run_optimization "update"
+                show_header="true"
                 ;;
             2)
                 echo
                 echo -e "${CYAN}▶▶▶ 正在执行 [一键开启BBR]${NC}"
                 run_optimization "bbr"
+                show_header="true"
                 ;;
             3)
                 echo
                 echo -e "${CYAN}▶▶▶ 正在执行 [TCP网络调优]${NC}"
                 run_optimization "tcp"
+                show_header="true"
                 ;;
             4)
                 echo
                 echo -e "${CYAN}▶▶▶ 正在执行 [基础优化套餐]${NC}"
                 run_optimization "basic"
+                show_header="true"
                 ;;
             5)
                 echo
                 echo -e "${CYAN}▶▶▶ 正在执行 [DNS服务器配置]${NC}"
                 run_optimization "dns"
-                # DNS配置脚本执行完毕后直接返回主菜单，不需要额外提示
-                echo
-                continue
                 ;;
             6)
                 echo
                 echo -e "${CYAN}▶▶▶ 正在执行 [SSH安全配置]${NC}"
                 run_optimization "ssh"
+                show_header="true"
                 ;;
             7)
                 echo
                 echo -e "${CYAN}▶▶▶ 正在执行 [禁用IPv6]${NC}"
                 run_optimization "ipv6"
+                show_header="true"
                 ;;
             8)
                 echo
@@ -331,13 +334,16 @@ interactive_menu() {
                 ;;
         esac
         
-        # 只有在子脚本异常退出时才显示"按任意键返回主菜单"
-        echo
-        echo -e "${CYAN}按任意键返回主菜单...${NC}"
-        read -n 1 -s
-        echo
+        # 对于大多数脚本，显示"按任意键返回主菜单"
+        # 但排除特殊脚本（DNS配置、重装系统、退出）
+        if [[ "$choice" != "5" ]] && [[ "$choice" != "8" ]] && [[ "$choice" != "0" ]]; then
+            echo
+            echo -e "${CYAN}按任意键返回主菜单...${NC}"
+            read -n 1 -s
+            echo
+        fi
         
-        # 后续循环都显示标题框
+        # 确保后续循环都显示标题框
         show_header="true"
     done
 }
