@@ -120,9 +120,7 @@ main() {
                 echo
                 ;;
             0)
-                echo
-                log_info "退出宝塔面板菜单"
-                break
+                return 0
                 ;;
             *)
                 echo
