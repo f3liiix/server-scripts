@@ -329,6 +329,7 @@ interactive_menu() {
             *)
                 echo
                 warn "无效选择，请输入 0-8 之间的数字"
+                echo
                 sleep 2
                 continue
                 ;;
