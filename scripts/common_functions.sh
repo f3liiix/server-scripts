@@ -43,13 +43,9 @@ load_config() {
     # 如果配置文件存在，则加载它
     if [[ -f "$config_file" ]]; then
         # shellcheck source=/dev/null
-        if source "$config_file" 2>/dev/null; then
-            echo "配置文件加载成功: $config_file" >&2
-        else
+        source "$config_file" 2>/dev/null || {
             echo "警告: 无法加载配置文件 $config_file" >&2
-        fi
-    else
-        echo "警告: 配置文件不存在 $config_file" >&2
+        }
     fi
 }
 
