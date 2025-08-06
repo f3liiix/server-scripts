@@ -2,13 +2,13 @@
 
 # ==============================================================================
 # Script Name: system_update.sh
-# Description: 系统和软件包更新脚本
-# Author:      Server Optimization Tools
-# Date:        2025-01-08
+# Description: Comprehensive system and package update tool with smart package manager detection
+# Author:      f3liiix
+# Date:        2025-08-05
 # Version:     1.0.0
 # ==============================================================================
 
-set -euo pipefail
+set -euo pipefail  # 严格模式：遇到错误立即退出
 
 # 获取脚本目录
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -23,6 +23,8 @@ else
 fi
 
 # --- 配置项 ---
+# 使用配置文件中的变量
+readonly BACKUP_DIR="${UPDATE_BACKUP_DIR}_$(date +%Y%m%d_%H%M%S)"
 readonly SCRIPT_VERSION="1.0.0"
 readonly LOG_FILE="/var/log/system_update.log"
 

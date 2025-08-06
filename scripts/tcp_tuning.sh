@@ -25,7 +25,8 @@ fi
 
 # --- 配置项 ---
 readonly SCRIPT_VERSION="1.0.0"
-readonly BACKUP_DIR="${TCP_BACKUP_DIR}_$(date +%Y%m%d_%H%M%S)"
+# 使用配置文件中的变量时提供默认值
+readonly BACKUP_DIR="${TCP_BACKUP_DIR:-/var/backups/tcp_tuning}_$(date +%Y%m%d_%H%M%S)"
 readonly SYSCTL_CONF="${SYSCTL_CONF:-/etc/sysctl.conf}"
 readonly LIMITS_CONF="${LIMITS_CONF:-/etc/security/limits.conf}"
 readonly MIN_KERNEL_VERSION="${MIN_KERNEL_VERSION:-4.9}"

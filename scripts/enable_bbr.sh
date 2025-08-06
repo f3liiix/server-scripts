@@ -2,9 +2,7 @@
 
 # ==============================================================================
 # Script Name: enable_bbr.sh
-# Description: Enhanced BBR (Bottleneck Bandwidth and RTT) enablement script
-#              Based on teddysun's BBR script with improvements and integration
-# Original:    https://raw.githubusercontent.com/teddysun/across/master/bbr.sh
+# Description: Enable Google BBR congestion control with kernel version check and auto-upgrade
 # Author:      f3liiix
 # Date:        2025-08-05
 # Version:     1.0.0
@@ -25,11 +23,10 @@ else
 fi
 
 # --- 配置项 ---
-readonly SCRIPT_VERSION="1.0.0"
-readonly BACKUP_DIR="/etc/backup_bbr_$(date +%Y%m%d_%H%M%S)"
-readonly SYSCTL_CONF="/etc/sysctl.conf"
-readonly MIN_KERNEL_VERSION="4.9"
-readonly LOG_FILE="/var/log/bbr_installation.log"
+# 使用配置文件中的变量，避免重复定义
+readonly BACKUP_DIR="${BBR_BACKUP_DIR}_$(date +%Y%m%d_%H%M%S)"
+readonly SYSCTL_CONF="${SYSCTL_CONF:-/etc/sysctl.conf}"
+readonly MIN_KERNEL_VERSION="${BBR_MIN_KERNEL_VERSION:-4.9}"
 
 # BBR内核下载源配置
 readonly UBUNTU_KERNEL_BASE="https://kernel.ubuntu.com/~kernel-ppa/mainline"

@@ -25,7 +25,8 @@ fi
 # --- 配置项 ---
 readonly SCRIPT_VERSION="1.0.0"
 readonly RESOLV_CONF="/etc/resolv.conf"
-readonly BACKUP_DIR="/etc/backup_dns_$(date +%Y%m%d_%H%M%S)"
+readonly DNS_BACKUP_DIR="/etc/backup_dns"
+readonly BACKUP_DIR="${DNS_BACKUP_DIR}_$(date +%Y%m%d_%H%M%S)"
 readonly LOG_FILE="/var/log/dns_configuration.log"
 
 # 预设DNS配置 - 使用函数避免关联数组兼容性问题

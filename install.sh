@@ -12,7 +12,7 @@ set -euo pipefail
 readonly VERSION="1.0.0"
 readonly REPO_URL="https://github.com/f3liiix/server-scripts"
 readonly RAW_BASE="https://ss.hide.ss"
-readonly INSTALL_DIR="/opt/server-optimization"
+readonly INSTALL_DIR="/opt/server-scripts"
 
 # 颜色定义
 readonly RED='\033[0;31m'
@@ -258,8 +258,8 @@ interactive_menu() {
         echo -e "  ${CYAN}4${NC} ▶ 🛜  一键网络优化           ${GRAY}# 一键运行1、2、3项${NC}"
         echo -e "  ${DARK_GRAY}───────────────────────────────────────────────────────────────${NC}"
         echo -e "  ${CYAN}5${NC} ▶ 🌍 DNS服务器配置          ${GRAY}# 修改服务器DNS${NC}"
-        echo -e "  ${CYAN}6${NC} ▶ 🔐 SSH安全配置            ${GRAY}# SSH端口和密码修改${NC}"
-        echo -e "  ${CYAN}7${NC} ▶ 🚫 禁用IPv6               ${GRAY}# 避免双栈网络问题${NC}"
+        echo -e "  ${CYAN}6${NC} ▶ 🚫 禁用IPv6               ${GRAY}# 避免双栈网络问题${NC}"
+        echo -e "  ${CYAN}7${NC} ▶ 🔐 SSH安全配置            ${GRAY}# SSH端口和密码修改${NC}"
         echo -e "  ${DARK_GRAY}───────────────────────────────────────────────────────────────${NC}"
         echo -e "  ${CYAN}8${NC} ▶ 💿 一键dd纯净系统(萌咖)   ${GRAY}# 重装服务器系统${NC}"
         echo -e "  ${DARK_GRAY}───────────────────────────────────────────────────────────────${NC}"
@@ -300,14 +300,14 @@ interactive_menu() {
                 ;;
             6)
                 echo
-                echo -e "${CYAN}▶▶▶ 正在执行 [SSH安全配置]${NC}"
-                run_optimization "ssh"
+                echo -e "${CYAN}▶▶▶ 正在执行 [禁用IPv6]${NC}"
+                run_optimization "ipv6"
                 show_header="true"
                 ;;
             7)
                 echo
-                echo -e "${CYAN}▶▶▶ 正在执行 [禁用IPv6]${NC}"
-                run_optimization "ipv6"
+                echo -e "${CYAN}▶▶▶ 正在执行 [SSH安全配置]${NC}"
+                run_optimization "ssh"
                 show_header="true"
                 ;;
             8)

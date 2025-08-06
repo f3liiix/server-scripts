@@ -7,6 +7,10 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/common_functions.sh"
 
+# --- 配置项 ---
+# 使用配置文件中的变量
+readonly BACKUP_DIR="${REINSTALL_BACKUP_DIR}_$(date +%Y%m%d_%H%M%S)"
+
 # 颜色定义（使用 common_functions.sh 中的定义）
 # 检查 wget 是否安装
 check_wget() {

@@ -24,6 +24,7 @@ else
 fi
 
 # --- 配置项 ---
+# 使用配置文件中的变量，避免重复定义
 readonly SYSCTL_CONF="${SYSCTL_CONF:-/etc/sysctl.conf}"
 readonly BACKUP_SUFFIX=".bak.$(date +%Y%m%d_%H%M%S)"
 readonly BACKUP_DIR="${IPV6_BACKUP_DIR}_$(date +%Y%m%d_%H%M%S)"
@@ -250,10 +251,13 @@ main() {
         exit 0
     fi
     
+    local backup_file
+    backup_file=$(backup_config)
+    
     # 执行禁用IPv6步骤
-    if backup_config && \
-       disable_ipv6 && \
-       apply_sysctl && \
+    if [[ -n "$backup_file" ]] && \
+       add_ipv6_config && \
+       apply_config && \
        verify_ipv6_disabled; then
         echo
         log_success "IPv6已成功禁用！"
@@ -262,6 +266,10 @@ main() {
     else
         echo
         log_error "禁用IPv6过程中出现错误"
+        # 尝试回滚更改
+        if [[ -n "$backup_file" ]]; then
+            rollback_changes "$backup_file"
+        fi
         return 1
     fi
 }

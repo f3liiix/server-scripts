@@ -2,12 +2,11 @@
 
 # ==============================================================================
 # Script Name: configure_ssh.sh
-# Description: SSH security configuration script for changing port and passwords
+# Description: Interactive SSH security configuration tool with port and password management
 # Author:      f3liiix
 # Date:        2025-08-05
 # Version:     1.0.0
 # ==============================================================================
-
 
 set -euo pipefail  # 严格模式：遇到错误立即退出
 
@@ -24,10 +23,10 @@ else
 fi
 
 # --- 配置项 ---
-readonly SCRIPT_VERSION="1.0.0"
-readonly SSHD_CONFIG="/etc/ssh/sshd_config"
-readonly BACKUP_DIR="/etc/backup_ssh_$(date +%Y%m%d_%H%M%S)"
-readonly DEFAULT_SSH_PORT="22"
+# 使用配置文件中的变量，避免重复定义
+readonly SSHD_CONFIG="${SSHD_CONFIG:-/etc/ssh/sshd_config}"
+readonly BACKUP_DIR="${SSH_BACKUP_DIR}_$(date +%Y%m%d_%H%M%S)"
+readonly DEFAULT_SSH_PORT="${SSH_DEFAULT_PORT:-22}"
 readonly LOG_FILE="/var/log/ssh_configuration.log"
 
 # SSH端口范围
