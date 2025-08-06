@@ -293,6 +293,9 @@ interactive_menu() {
                 echo
                 echo -e "${CYAN}▶▶▶ 正在执行 [DNS服务器配置]${NC}"
                 run_optimization "dns"
+                # DNS配置脚本执行完毕后直接返回主菜单，不需要额外提示
+                echo
+                continue
                 ;;
             6)
                 echo
