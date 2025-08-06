@@ -26,10 +26,10 @@ check_root || exit 1
 # 宝塔面板安装选项菜单
 show_bt_menu() {
     echo
-    echo -e "${CYAN}🔧 请选择操作${NC}"
+    echo -e "${CYAN}↘️ 请选择操作${NC}"
     echo -e "${DARK_GRAY}─────────────────────────────────────────────────────────────────${NC}"
-    echo -e "  ${CYAN}1${NC} ▶ 📦 安装宝塔面板 11.0.0 开心版（支持 Centos/Debian/Ubuntu/Fedora 等系统）"
-    echo -e "  ${CYAN}2${NC} ▶ 🔄 升级宝塔面板至 11.0.0 开心版（支持所有版本升级至 11.0.0 开心版）"
+    echo -e "  ${CYAN}1${NC} ▶ 📦 安装宝塔面板 11.0.0 开心版（支持 Debian/Ubuntu/CentOS 等系统）"
+    echo -e "  ${CYAN}2${NC} ▶ 🔄 升级宝塔面板至 11.0.0 开心版（支持所有版本升级至开心版）"
     echo -e "  ${DARK_GRAY}───────────────────────────────────────────────────────────────${NC}"
     echo -e "  ${CYAN}0${NC} ▶ 🚪 退出"
     echo
