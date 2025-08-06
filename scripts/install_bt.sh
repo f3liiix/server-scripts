@@ -31,7 +31,7 @@ show_bt_menu() {
     echo -e "  ${CYAN}1${NC} ▶ 📦 安装宝塔面板 11.0.0 开心版（支持 Centos/Debian/Ubuntu/Fedora 等系统）"
     echo -e "  ${CYAN}2${NC} ▶ 🔄 升级宝塔面板至 11.0.0 开心版（支持所有版本升级至 11.0.0 开心版）"
     echo -e "  ${DARK_GRAY}───────────────────────────────────────────────────────────────${NC}"
-    echo -e "  ${CYAN}3${NC} ▶ 🚪 退出"
+    echo -e "  ${CYAN}0${NC} ▶ 🚪 退出"
     echo
 }
 
@@ -96,7 +96,7 @@ update_bt() {
 main() {
     while true; do
         show_bt_menu
-        read -p "$(echo -e "${YELLOW}请输入选择 (1-3): ${NC}")" choice
+        read -p "$(echo -e "${YELLOW}请输入选择 (1-2, 0): ${NC}")" choice
         
         case $choice in
             1)
@@ -119,14 +119,14 @@ main() {
                 read -n 1 -s
                 echo
                 ;;
-            3)
+            0)
                 echo
                 log_info "退出宝塔面板菜单"
                 break
                 ;;
             *)
                 echo
-                log_warning "无效选择，请输入 1-3 之间的数字"
+                log_warning "无效选择，请输入 0-2 之间的数字"
                 echo
                 sleep 2
                 ;;
