@@ -214,7 +214,7 @@ run_reinstall() {
     echo -e "${INFO}☑️  脚本下载完成，准备执行..."
     
     # 构建命令
-    CMD="bash InstallNET.sh -${OS} ${VERSION} -port \"${SSH_PORT}\" -pwd '${SSH_PASSWORD}' -hostname \"${HOSTNAME}\""
+    CMD="bash InstallNET.sh -${OS} ${VERSION} -port \"${SSH_PORT}\" -pwd \"${SSH_PASSWORD}\" -hostname \"${HOSTNAME}\""
     
     if [[ "${ENABLE_BBR}" == true ]]; then
         CMD="${CMD} --bbr"
@@ -246,7 +246,7 @@ run_reinstall() {
         echo -e "\n${INFO}${CYAN}开始运行重装脚本...${NC}"
         # 执行重装命令，但不直接使用 eval
         # 这样可以避免当前 shell 被第三方脚本退出影响
-        bash InstallNET.sh -${OS} ${VERSION} -port "${SSH_PORT}" -pwd '${SSH_PASSWORD}' -hostname "${HOSTNAME}" ${ENABLE_BBR:+--bbr}
+        bash InstallNET.sh -${OS} ${VERSION} -port "${SSH_PORT}" -pwd "${SSH_PASSWORD}" -hostname "${HOSTNAME}" ${ENABLE_BBR:+--bbr}
         
         # 脚本执行成功后删除临时文件
         rm -f InstallNET.sh
