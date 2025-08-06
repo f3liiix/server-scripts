@@ -344,8 +344,8 @@ interactive_menu() {
         esac
         
         # 对于大多数脚本，显示"按任意键返回主菜单"
-        # 但排除特殊脚本（DNS配置、重装系统、退出）
-        if [[ "$choice" != "5" ]] && [[ "$choice" != "8" ]] && [[ "$choice" != "0" ]]; then
+        # 但排除特殊脚本（DNS配置、重装系统、宝塔面板、退出）
+        if [[ "$choice" != "5" ]] && [[ "$choice" != "8" ]] && [[ "$choice" != "9" ]] && [[ "$choice" != "0" ]]; then
             echo
             echo -e "${CYAN}按任意键返回主菜单...${NC}"
             read -n 1 -s
