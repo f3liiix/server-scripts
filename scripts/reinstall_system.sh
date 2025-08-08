@@ -206,8 +206,25 @@ run_reinstall() {
         return 1
     fi
     
-    # 下载脚本
-    if ! wget --no-check-certificate -qO InstallNET.sh 'https://gitee.com/mb9e8j2/Tools/raw/master/Linux_reinstall/InstallNET.sh'; then
+    # 下载脚本，尝试多个镜像源
+    local download_success=false
+    local mirrors=(
+        'https://raw.githubusercontent.com/leitbogioro/Tools/master/Linux_reinstall/InstallNET.sh'
+        'https://ghproxy.com/https://raw.githubusercontent.com/leitbogioro/Tools/master/Linux_reinstall/InstallNET.sh'
+        'https://cdn.jsdelivr.net/gh/leitbogioro/Tools@master/Linux_reinstall/InstallNET.sh'
+    )
+    
+    for mirror in "${mirrors[@]}"; do
+        if wget --no-check-certificate -qO InstallNET.sh "$mirror"; then
+            echo -e "${INFO}从 $mirror 下载成功"
+            download_success=true
+            break
+        else
+            echo -e "${WARN}从 $mirror 下载失败，尝试下一个镜像..."
+        fi
+    done
+    
+    if [[ "$download_success" != true ]]; then
         echo -e "${ERROR}下载 InstallNET.sh 脚本失败"
         return 1
     fi
